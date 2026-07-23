@@ -1,11 +1,12 @@
 import React, { useState, useRef } from 'react';
-import { StyleSheet, Text, View, ScrollView, TouchableOpacity, Animated, type DimensionValue } from 'react-native';
+import { StyleSheet, Text, View, ScrollView, TouchableOpacity, Animated, LayoutAnimation, Platform, UIManager, type DimensionValue } from 'react-native';
 import { useZenZoo, shopCatalog, COINS_PER_LEVEL } from '../context/ZenZooContext';
 import { LIGHT_THEME, DARK_THEME } from '../theme/theme';
 import { tapHaptic } from '../utils/haptics';
 import { Feather } from '@expo/vector-icons';
 import { SPECIES_LIST } from '../data/species';
-import PetAvatar, { asEyeStyle, asHairStyle, hatStyleFromId, outfitStyleFromId } from '../components/sprites/PetAvatar';
+import { BIOMES, type BiomeKey } from '../data/biomes';
+import PetAvatar, { asEyeStyle, asHairStyle, hatStyleFromId, outfitStyleFromId, HatIcon, OutfitIcon } from '../components/sprites/PetAvatar';
 import PetBackground from '../components/PetBackground';
 import SaplingGraphic, { getSaplingStage } from '../components/SaplingGraphic';
 
@@ -24,8 +25,11 @@ const PROGRESSION_MILESTONES = [
   { level: 15, xp: 700,  reward: 'Hippo Unlocked',     detail: 'The mighty hippo is yours',        emoji: '🦛' },
   { level: 20, xp: 950,  reward: 'Red Panda Unlocked', detail: 'The rare red panda appears',       emoji: '🦝' },
   { level: 25, xp: 1200, reward: 'Lion Unlocked',      detail: 'The brave lion roars for you',     emoji: '🦁' },
-  { level: 30, xp: 1450, reward: 'Zebra Unlocked',     detail: 'The speedy zebra gallops in',      emoji: '🦓' },
 ];
+
+if (Platform.OS === 'android' && UIManager.setLayoutAnimationEnabledExperimental) {
+  UIManager.setLayoutAnimationEnabledExperimental(true);
+}
 
 function useSprings(count: number, pressedScale = 0.94) {
   const vals = useRef(Array.from({ length: count }, () => new Animated.Value(1))).current;
@@ -37,13 +41,27 @@ function useSprings(count: number, pressedScale = 0.94) {
 export default function MyZenZooScreen({ onNavigate }: { onNavigate?: (screen: string) => void }) {
   const { genetics, equipped, ownedItems, level, calmCoins, updateGenetic, equipItem, isDark, ageGroup, language, t } = useZenZoo();
   const T = isDark ? DARK_THEME : LIGHT_THEME;
-  const [editorTab, setEditorTab] = useState<'Species' | 'Wardrobe' | 'Sprout' | 'Journey'>('Species');
+  const [editorTab, setEditorTab] = useState<'Species' | 'Zoo' | 'Wardrobe' | 'Sprout' | 'Journey'>('Species');
   const [potTheme, setPotTheme] = useState(SPROUT_POTS[0]);
+  const [openWardrobeCat, setOpenWardrobeCat] = useState<'Backgrounds' | 'Hats' | 'Outfits' | null>('Backgrounds');
+  const [openBiome, setOpenBiome] = useState<BiomeKey | null>(BIOMES[0].key);
+
+  const toggleWardrobeCat = (cat: 'Backgrounds' | 'Hats' | 'Outfits') => {
+    tapHaptic();
+    LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
+    setOpenWardrobeCat(prev => (prev === cat ? null : cat));
+  };
+
+  const toggleBiome = (biome: BiomeKey) => {
+    tapHaptic();
+    LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
+    setOpenBiome(prev => (prev === biome ? null : biome));
+  };
 
   // The Journey tab is a text-heavy list of level milestones — too much
   // reading for Toddler, so it's hidden there and shown for everyone else.
   const isToddler = ageGroup === 'Toddler (2-4)';
-  const EDITOR_TABS = (['Species', 'Wardrobe', 'Sprout', 'Journey'] as const).filter(t => !isToddler || t !== 'Journey');
+  const EDITOR_TABS = (['Species', 'Zoo', 'Wardrobe', 'Sprout', 'Journey'] as const).filter(t => !isToddler || t !== 'Journey');
 
   const speciesSprings = useSprings(SPECIES_LIST.length);
   const potSprings     = useSprings(SPROUT_POTS.length);
@@ -57,7 +75,7 @@ export default function MyZenZooScreen({ onNavigate }: { onNavigate?: (screen: s
     <View style={[styles.container, { backgroundColor: isDark ? T.bg : '#FFFBF4' }]}>
       {/* ── Canvas ── */}
       <View style={styles.canvasContainer}>
-        <PetBackground bgType={activeBg?.type} />
+        <PetBackground bgColor={activeBg?.type} />
 
         {/* Avatar + Sapling side by side */}
         <View style={styles.stageRow}>
@@ -73,7 +91,7 @@ export default function MyZenZooScreen({ onNavigate }: { onNavigate?: (screen: s
               hair={asHairStyle(genetics.hair)}
               hat={hatStyleFromId(equipped.Hats)}
               outfit={outfitStyleFromId(equipped.Outfits)}
-              size={100}
+              size={210}
             />
           </View>
 
@@ -160,38 +178,108 @@ export default function MyZenZooScreen({ onNavigate }: { onNavigate?: (screen: s
           </>
         )}
 
+        {/* ZOO — browse biomes and see how many animals you've collected from each */}
+        {editorTab === 'Zoo' && (
+          <>
+            <Text style={[styles.drawerHint, { color: isDark ? T.mid : '#7F8C8D' }]}>{t('Explore the zoo biomes and see which animals you\'ve collected!')}</Text>
+            {BIOMES.map(biome => {
+              const biomeSpecies = SPECIES_LIST.filter(s => s.biome === biome.key);
+              const unlockedCount = biomeSpecies.filter(s => level >= s.unlockLevel).length;
+              const isOpen = openBiome === biome.key;
+              return (
+                <View key={biome.key} style={styles.biomeSection}>
+                  <TouchableOpacity
+                    style={[styles.biomeHeader, { backgroundColor: isDark ? biome.color + '22' : biome.color + '15', borderColor: biome.color + '55' }]}
+                    onPress={() => toggleBiome(biome.key)}
+                    activeOpacity={0.75}
+                  >
+                    <Text style={styles.biomeIcon}>{biome.icon}</Text>
+                    <Text style={[styles.biomeLabel, { color: biome.color }]}>{t(biome.key)}</Text>
+                    <Text style={[styles.biomeCount, { color: biome.color }]}>{unlockedCount}/{biomeSpecies.length}</Text>
+                    <Feather name={isOpen ? 'chevron-up' : 'chevron-down'} size={20} color={biome.color} />
+                  </TouchableOpacity>
+
+                  {isOpen && (
+                    <View style={styles.speciesGrid}>
+                      {biomeSpecies.map(spec => {
+                        const unlocked = level >= spec.unlockLevel;
+                        return (
+                          <View
+                            key={spec.type}
+                            style={[styles.speciesCard, { backgroundColor: isDark ? T.card : '#FFFFFF', borderColor: isDark ? T.edge : '#EFEFEF' }, !unlocked && { backgroundColor: isDark ? T.bg : '#F8F8F8' }]}
+                          >
+                            {unlocked ? (
+                              <PetAvatar species={spec.type} bodyColor={spec.color} accentColor={spec.accent} muzzleColor={spec.muzzle} eyes={asEyeStyle(spec.eyes)} size={42} />
+                            ) : (
+                              <Feather name="lock" size={28} color="#B2BEC3" />
+                            )}
+                            <Text style={[styles.speciesName, { color: isDark ? T.text : '#2D3436' }, !unlocked && styles.lockedText]}>{t(spec.type)}</Text>
+                            {!unlocked && (
+                              <Text style={styles.unlockHint}>{language === 'es' ? `Niv. ${spec.unlockLevel}` : `Lv. ${spec.unlockLevel}`}</Text>
+                            )}
+                          </View>
+                        );
+                      })}
+                    </View>
+                  )}
+                </View>
+              );
+            })}
+          </>
+        )}
+
         {/* WARDROBE */}
         {editorTab === 'Wardrobe' && (
           <>
             <Text style={[styles.drawerHint, { color: isDark ? T.mid : '#7F8C8D' }]}>{t('Equip items you own from the Calm Shop.')}</Text>
             {(['Backgrounds', 'Hats', 'Outfits'] as const).map(cat => {
               const catItems = shopCatalog.filter(i => i.category === cat && ownedItems.includes(i.id));
+              const isOpen = openWardrobeCat === cat;
               return (
                 <View key={cat} style={styles.wardrobeSection}>
-                  <Text style={[styles.wardrobeCatLabel, { color: isDark ? T.text : '#2D3436' }]}>
-                    {cat === 'Backgrounds' ? `🖼️ ${t('Backgrounds')}` : cat === 'Hats' ? `🎩 ${t('Hats')}` : `👕 ${t('Outfits')}`}
-                  </Text>
-                  {catItems.length === 0 ? (
-                    <Text style={[styles.wardrobeEmpty, { color: isDark ? T.soft : '#B2BEC3' }]}>{t('Nothing owned yet — visit the Calm Shop!')}</Text>
-                  ) : (
-                    <View style={styles.optionsWrap}>
-                      {catItems.map(item => {
-                        const isOn = equipped[cat] === item.id;
-                        return (
-                          <TouchableOpacity
-                            key={item.id}
-                            style={[styles.wardrobeCard, { backgroundColor: isDark ? T.card : '#FFFFFF', borderColor: isDark ? T.edge : '#EFEFEF' }, isOn && styles.wardrobeCardActive]}
-                            onPress={() => equipItem(cat, isOn ? null : item.id)}
-                          >
-                            <Text style={styles.wardrobeCardEmoji}>
-                              {cat === 'Backgrounds' ? '🖼️' : cat === 'Hats' ? '🎩' : '👕'}
-                            </Text>
-                            <Text style={[styles.wardrobeCardName, { color: isDark ? T.text : '#2D3436' }, isOn && styles.wardrobeCardNameActive]}>{t(item.name)}</Text>
-                            {isOn && <View style={styles.onBadge}><Text style={styles.onBadgeText}>{t('Equipped')}</Text></View>}
-                          </TouchableOpacity>
-                        );
-                      })}
-                    </View>
+                  <TouchableOpacity
+                    style={[styles.wardrobeCatHeader, { backgroundColor: isDark ? T.card : '#FFFFFF', borderColor: isDark ? T.edge : '#EFEFEF' }]}
+                    onPress={() => toggleWardrobeCat(cat)}
+                    activeOpacity={0.75}
+                  >
+                    <Text style={[styles.wardrobeCatLabel, { color: isDark ? T.text : '#2D3436' }]}>
+                      {cat === 'Backgrounds' ? `🎨 ${t('Backgrounds')}` : cat === 'Hats' ? `🎩 ${t('Hats')}` : `👕 ${t('Outfits')}`}
+                    </Text>
+                    <Text style={[styles.wardrobeCatCount, { color: isDark ? T.mid : '#7F8C8D' }]}>{catItems.length}</Text>
+                    <Feather name={isOpen ? 'chevron-up' : 'chevron-down'} size={18} color={isDark ? T.mid : '#7F8C8D'} />
+                  </TouchableOpacity>
+
+                  {isOpen && (
+                    catItems.length === 0 ? (
+                      <Text style={[styles.wardrobeEmpty, { color: isDark ? T.soft : '#B2BEC3' }]}>{t('Nothing owned yet — visit the Calm Shop!')}</Text>
+                    ) : (
+                      <View style={styles.optionsWrap}>
+                        {catItems.map(item => {
+                          const isOn = equipped[cat] === item.id;
+                          return (
+                            <TouchableOpacity
+                              key={item.id}
+                              style={[styles.wardrobeCard, { backgroundColor: isDark ? T.card : '#FFFFFF', borderColor: isDark ? T.edge : '#EFEFEF' }, isOn && styles.wardrobeCardActive]}
+                              onPress={() => equipItem(cat, isOn ? null : item.id)}
+                            >
+                              {cat === 'Backgrounds' && item.type ? (
+                                <View style={[styles.wardrobeCardImage, { backgroundColor: item.type }]} />
+                              ) : cat === 'Hats' && hatStyleFromId(item.id) ? (
+                                <HatIcon style={hatStyleFromId(item.id)!} size={48} />
+                              ) : cat === 'Outfits' && outfitStyleFromId(item.id) ? (
+                                <OutfitIcon style={outfitStyleFromId(item.id)!} size={48} />
+                              ) : (
+                                <Text style={styles.wardrobeCardEmoji}>
+                                  {cat === 'Hats' ? '🎩' : '👕'}
+                                </Text>
+                              )}
+                              <Text style={[styles.wardrobeCardName, { color: isDark ? T.text : '#2D3436' }, isOn && styles.wardrobeCardNameActive]}>{t(item.name)}</Text>
+                              {isOn && <View style={styles.onBadge}><Text style={styles.onBadgeText}>{t('Equipped')}</Text></View>}
+                            </TouchableOpacity>
+                          );
+                        })}
+                      </View>
+                    )
                   )}
                 </View>
               );
@@ -285,14 +373,14 @@ const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#FFFBF4' },
 
   // Canvas
-  canvasContainer: { height: 270, marginHorizontal: 12, marginTop: 8, borderRadius: 24, overflow: 'hidden', position: 'relative', borderWidth: 1, borderColor: '#DDD' },
-  stageRow: { position: 'absolute', bottom: 12, left: 0, right: 0, flexDirection: 'row', justifyContent: 'space-around', alignItems: 'flex-end', paddingHorizontal: 12 },
+  canvasContainer: { height: 270, marginHorizontal: 4, marginTop: 8, borderRadius: 24, overflow: 'hidden', position: 'relative', borderWidth: 1, borderColor: '#DDD' },
+  stageRow: { position: 'absolute', bottom: 18, left: 0, right: 0, flexDirection: 'row', justifyContent: 'space-around', alignItems: 'flex-end', paddingHorizontal: 12 },
 
   // Avatar
-  avatarColumn: { width: 110, alignItems: 'center', position: 'relative' },
+  avatarColumn: { width: 220, alignItems: 'center', position: 'relative' },
 
   // Sapling
-  saplingColumn: { alignItems: 'center', width: 90 },
+  saplingColumn: { alignItems: 'center', width: 110 },
   saplingTitle: { fontSize: 9, fontWeight: '800', color: '#FFFFFF', marginBottom: 4, textAlign: 'center', textShadowColor: 'rgba(0,0,0,0.5)', textShadowOffset: { width: 0, height: 1 }, textShadowRadius: 3, backgroundColor: 'rgba(0,0,0,0.2)', paddingHorizontal: 6, paddingVertical: 2, borderRadius: 6 },
 
   // Pot
@@ -326,6 +414,13 @@ const styles = StyleSheet.create({
   activeCheckBadge: { position: 'absolute', top: 6, right: 6, backgroundColor: '#6C5CE7', borderRadius: 6, paddingHorizontal: 4, paddingVertical: 2 },
   colorSwatch: { width: 14, height: 14, borderRadius: 7, borderWidth: 2, marginTop: 4 },
 
+  // Zoo biomes
+  biomeSection: { marginBottom: 18 },
+  biomeHeader:  { flexDirection: 'row', alignItems: 'center', gap: 8, borderRadius: 14, padding: 12, marginBottom: 10, borderWidth: 1.5 },
+  biomeIcon:    { fontSize: 20 },
+  biomeLabel:   { fontSize: 14, fontWeight: '800', flex: 1 },
+  biomeCount:   { fontSize: 12, fontWeight: '800', opacity: 0.8 },
+
   // Options generic
   optionsWrap: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
   optionCard: { backgroundColor: '#FFFFFF', borderRadius: 14, padding: 12, alignItems: 'center', borderWidth: 1.5, borderColor: '#EFEFEF', minWidth: 72 },
@@ -336,11 +431,14 @@ const styles = StyleSheet.create({
 
   // Wardrobe
   wardrobeSection: { marginBottom: 18 },
-  wardrobeCatLabel: { fontSize: 13, fontWeight: '800', color: '#2D3436', marginBottom: 8 },
+  wardrobeCatHeader: { flexDirection: 'row', alignItems: 'center', gap: 8, borderRadius: 14, padding: 12, marginBottom: 10, borderWidth: 1.5, borderColor: '#EFEFEF' },
+  wardrobeCatLabel: { fontSize: 13, fontWeight: '800', color: '#2D3436', flex: 1 },
+  wardrobeCatCount: { fontSize: 12, fontWeight: '700', color: '#7F8C8D' },
   wardrobeEmpty: { fontSize: 12, color: '#B2BEC3', fontStyle: 'italic', paddingVertical: 8 },
   wardrobeCard: { backgroundColor: '#FFFFFF', borderRadius: 14, padding: 12, alignItems: 'center', borderWidth: 1.5, borderColor: '#EFEFEF', minWidth: 80, maxWidth: 100 },
   wardrobeCardActive: { borderColor: '#6C5CE7', backgroundColor: '#F4F2FF' },
   wardrobeCardEmoji: { fontSize: 24, marginBottom: 4 },
+  wardrobeCardImage: { width: 56, height: 56, borderRadius: 10, marginBottom: 4 },
   wardrobeCardName: { fontSize: 10, fontWeight: '700', color: '#2D3436', textAlign: 'center' },
   wardrobeCardNameActive: { color: '#6C5CE7' },
   onBadge: { marginTop: 4, backgroundColor: '#6C5CE7', borderRadius: 6, paddingHorizontal: 4, paddingVertical: 2 },

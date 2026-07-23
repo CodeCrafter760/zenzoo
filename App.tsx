@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { View, StyleSheet, Text, TouchableOpacity, SafeAreaView, Pressable, Animated } from 'react-native';
+import { View, StyleSheet, Text, TouchableOpacity, SafeAreaView, Pressable, Animated, ActivityIndicator } from 'react-native';
 import { ZenZooProvider, useZenZoo } from './src/context/ZenZooContext';
 import { LIGHT_THEME, DARK_THEME, PALETTE, RADIUS } from './src/theme/theme';
 import { tapHaptic } from './src/utils/haptics';
@@ -16,8 +16,18 @@ import GratitudeJournalScreen from './src/screens/GratitudeJournalScreen';
 import StoriesScreen from './src/screens/StoriesScreen';
 import AdminScreen from './src/screens/AdminScreen';
 import ParentDashboardScreen from './src/screens/ParentDashboardScreen';
+import AuthScreen from './src/screens/AuthScreen';
 import MoodSurveyScreen from './src/screens/MoodSurveyScreen';
 import { ChildSwitcherScreen } from './src/screens/ChildProfileScreen';
+
+function LoadingScreen({ isDark }: { isDark: boolean }) {
+  const T = isDark ? DARK_THEME : LIGHT_THEME;
+  return (
+    <SafeAreaView style={[styles.appContainer, styles.loadingContainer, { backgroundColor: isDark ? T.bg : '#F0F3FF' }]}>
+      <ActivityIndicator size="large" color={PALETTE.indigo} />
+    </SafeAreaView>
+  );
+}
 
 const TABS = [
   { screen: 'Home',     label: 'Home',    activeColor: PALETTE.gold,   activeBg: '#FFF8E0' },
@@ -41,7 +51,10 @@ type Screen = typeof TABS[number]['screen'] | 'Focus' | 'Bedroom' | 'Journal' | 
 function AppInner() {
   const [currentScreen, setScreen] = useState<Screen>('Home');
   const [hasEnteredApp, setHasEnteredApp] = useState(false);
-  const { isDark, isAdmin, toggleAdmin, childProfiles, activeChildId, t } = useZenZoo();
+  const {
+    isDark, isAdmin, toggleAdmin, childProfiles, activeChildId, t,
+    session, authLoading, childrenLoading,
+  } = useZenZoo();
   const T = isDark ? DARK_THEME : LIGHT_THEME;
 
   const toggleRef  = useRef(toggleAdmin);
@@ -77,6 +90,13 @@ function AppInner() {
       // Not a web environment — no document
     }
   }, []);
+
+  // A real account gates the app once per device — after signing in, the
+  // Supabase session persists locally, so this only shows up on first setup
+  // or after an explicit sign-out (day-to-day, kids just pick their profile).
+  if (authLoading) return <LoadingScreen isDark={isDark} />;
+  if (!session) return <AuthScreen />;
+  if (childrenLoading) return <LoadingScreen isDark={isDark} />;
 
   // Every app launch starts on the "Who's Playing?" picker — pick a profile or
   // create one. Profiles are freely switchable afterward (no PIN — siblings
@@ -157,6 +177,7 @@ export default function App() {
 
 const styles = StyleSheet.create({
   appContainer: { flex: 1 },
+  loadingContainer: { justifyContent: 'center', alignItems: 'center' },
   screenBody:   { flex: 1 },
 
   navBar: {

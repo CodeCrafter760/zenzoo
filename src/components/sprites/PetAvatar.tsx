@@ -1,5 +1,26 @@
 import React from 'react';
-import Svg, { Circle, Ellipse, Path, Polygon, Rect, G } from 'react-native-svg';
+import Svg, { Circle, Ellipse, Path, Polygon, Rect, G, Image as SvgImage, Defs, LinearGradient, Stop } from 'react-native-svg';
+import type { ImageSourcePropType } from 'react-native';
+
+// Real character art (assets/Species) — key matches SpeciesDef.type in src/data/species.ts.
+const SPECIES_IMAGES: Record<string, ImageSourcePropType> = {
+  Bear:       require('../../../assets/Species/bear.png'),
+  Fox:        require('../../../assets/Species/fox.png'),
+  Cat:        require('../../../assets/Species/cat.png'),
+  Owl:        require('../../../assets/Species/owl.png'),
+  Koala:      require('../../../assets/Species/koala.png'),
+  Elephant:   require('../../../assets/Species/elephant.png'),
+  Hippo:      require('../../../assets/Species/hippo.png'),
+  'Red Panda':require('../../../assets/Species/red_panda.png'),
+  Lion:       require('../../../assets/Species/lion.png'),
+};
+
+// width/height of the source art — the head is drawn at a fixed height with width scaled to
+// match, so every species reads as the same size regardless of its image's own proportions.
+const SPECIES_ASPECT: Record<string, number> = {
+  Bear: 1, Fox: 564 / 543, Cat: 1, Owl: 818 / 980, Koala: 704 / 436,
+  Elephant: 1385 / 980, Hippo: 1, 'Red Panda': 1, Lion: 450 / 360,
+};
 
 export type EyeStyle = 'Wonder' | 'Calm' | 'Sparkle' | 'Sleepy';
 export type HairStyle = 'None' | 'Bangs' | 'Mohawk' | 'Double Buns' | 'Wavy';
@@ -57,151 +78,7 @@ interface Props {
 // ── Shared geometry ──────────────────────────────────────────────────────────
 const CX = 60, CY = 78, BODY_R = 34;
 
-function Ears({ species, bodyColor, accentColor }: { species: string; bodyColor: string; accentColor: string }) {
-  switch (species) {
-    case 'Cat':
-    case 'Red Panda':
-      return (
-        <G>
-          <Polygon points="32,52 44,52 36,30" fill={bodyColor} />
-          <Polygon points="35,49 41,49 37,38" fill={accentColor} />
-          <Polygon points="76,52 88,52 84,30" fill={bodyColor} />
-          <Polygon points="79,49 85,49 83,38" fill={accentColor} />
-        </G>
-      );
-    case 'Fox':
-      return (
-        <G>
-          <Polygon points="30,50 46,50 35,24" fill={accentColor} />
-          <Polygon points="34,46 41,46 36,32" fill="#FFCCBC" />
-          <Polygon points="74,50 90,50 85,24" fill={accentColor} />
-          <Polygon points="79,46 86,46 84,32" fill="#FFCCBC" />
-        </G>
-      );
-    case 'Owl':
-      return (
-        <G>
-          <Path d="M30,50 Q28,36 36,28 Q42,34 38,50 Z" fill={bodyColor} />
-          <Path d="M90,50 Q92,36 84,28 Q78,34 82,50 Z" fill={bodyColor} />
-        </G>
-      );
-    case 'Koala':
-      return (
-        <G>
-          <Circle cx={28} cy={48} r={14} fill={bodyColor} />
-          <Circle cx={28} cy={48} r={7} fill={accentColor} />
-          <Circle cx={92} cy={48} r={14} fill={bodyColor} />
-          <Circle cx={92} cy={48} r={7} fill={accentColor} />
-        </G>
-      );
-    case 'Elephant':
-      return (
-        <G>
-          <Ellipse cx={22} cy={56} rx={13} ry={17} fill={bodyColor} stroke={accentColor} strokeWidth={2} />
-          <Ellipse cx={98} cy={56} rx={13} ry={17} fill={bodyColor} stroke={accentColor} strokeWidth={2} />
-        </G>
-      );
-    case 'Hippo':
-      return (
-        <G>
-          <Circle cx={30} cy={50} r={9} fill={bodyColor} />
-          <Circle cx={90} cy={50} r={9} fill={bodyColor} />
-        </G>
-      );
-    case 'Lion':
-      return (
-        <G>
-          <Circle cx={28} cy={50} r={12} fill={bodyColor} stroke="#D4AA30" strokeWidth={3} />
-          <Circle cx={92} cy={50} r={12} fill={bodyColor} stroke="#D4AA30" strokeWidth={3} />
-        </G>
-      );
-    case 'Zebra':
-      return (
-        <G>
-          <Path d="M30,52 Q28,36 38,32 Q44,40 40,52 Z" fill={bodyColor} />
-          <Rect x={32} y={40} width={4} height={10} rx={2} fill="#2C2C2C" />
-          <Path d="M90,52 Q92,36 82,32 Q76,40 80,52 Z" fill={bodyColor} />
-          <Rect x={84} y={40} width={4} height={10} rx={2} fill="#2C2C2C" />
-        </G>
-      );
-    default: // Bear
-      return (
-        <G>
-          <Circle cx={30} cy={50} r={13} fill={bodyColor} />
-          <Circle cx={30} cy={50} r={6.5} fill={accentColor} />
-          <Circle cx={90} cy={50} r={13} fill={bodyColor} />
-          <Circle cx={90} cy={50} r={6.5} fill={accentColor} />
-        </G>
-      );
-  }
-}
-
-function Eyes({ style }: { style: EyeStyle }) {
-  const ex = [50, 70];
-  if (style === 'Calm') {
-    return (
-      <G stroke="#2D3436" strokeWidth={2.5} strokeLinecap="round" fill="none">
-        <Path d={`M${ex[0] - 6},70 Q${ex[0]},66 ${ex[0] + 6},70`} />
-        <Path d={`M${ex[1] - 6},70 Q${ex[1]},66 ${ex[1] + 6},70`} />
-      </G>
-    );
-  }
-  if (style === 'Sleepy') {
-    return (
-      <G fill="#2D3436">
-        <Rect x={ex[0] - 6} y={68} width={12} height={4} rx={2} />
-        <Rect x={ex[1] - 6} y={68} width={12} height={4} rx={2} />
-      </G>
-    );
-  }
-  if (style === 'Sparkle') {
-    return (
-      <G>
-        <Circle cx={ex[0]} cy={70} r={5.5} fill="#2D3436" stroke="#A29BFE" strokeWidth={1} />
-        <Circle cx={ex[0] - 1.5} cy={68.5} r={1.4} fill="#FFD700" />
-        <Circle cx={ex[1]} cy={70} r={5.5} fill="#2D3436" stroke="#A29BFE" strokeWidth={1} />
-        <Circle cx={ex[1] - 1.5} cy={68.5} r={1.4} fill="#FFD700" />
-      </G>
-    );
-  }
-  // Wonder (default)
-  return (
-    <G>
-      <Circle cx={ex[0]} cy={70} r={5.5} fill="#2D3436" />
-      <Circle cx={ex[0] + 1.5} cy={68.5} r={1.6} fill="#FFFFFF" />
-      <Circle cx={ex[1]} cy={70} r={5.5} fill="#2D3436" />
-      <Circle cx={ex[1] + 1.5} cy={68.5} r={1.6} fill="#FFFFFF" />
-    </G>
-  );
-}
-
-function Hair({ style }: { style: HairStyle }) {
-  switch (style) {
-    case 'Bangs':
-      return <Path d="M40,46 Q60,36 80,46 L80,54 Q60,46 40,54 Z" fill="#4A3728" />;
-    case 'Mohawk':
-      return <Path d="M55,18 L65,18 L62,42 L58,42 Z" fill="#FF4757" />;
-    case 'Double Buns':
-      return (
-        <G fill="#2F3542">
-          <Circle cx={38} cy={32} r={8} />
-          <Circle cx={82} cy={32} r={8} />
-        </G>
-      );
-    case 'Wavy':
-      return (
-        <G fill="#4A3728">
-          <Ellipse cx={36} cy={44} rx={9} ry={7} />
-          <Ellipse cx={50} cy={38} rx={9} ry={6} />
-          <Ellipse cx={64} cy={42} rx={9} ry={7} />
-        </G>
-      );
-    default:
-      return null;
-  }
-}
-
-function Hat({ style }: { style: HatStyle }) {
+export function Hat({ style }: { style: HatStyle }) {
   switch (style) {
     case 'top':
       return (
@@ -322,156 +199,322 @@ function Hat({ style }: { style: HatStyle }) {
   }
 }
 
-function Outfit({ style, bodyColor }: { style: OutfitStyle; bodyColor: string }) {
+// `r` is the half-width of the shoulders — PetAvatar scales this per species so a wide-headed
+// koala gets broader shoulders than a narrow owl (see bodyHalfW in the main render below).
+// Shop/wardrobe thumbnails (OutfitIcon) have no species context, so `r` defaults to BODY_R.
+export function Outfit({ style, bodyColor, r = BODY_R }: { style: OutfitStyle; bodyColor: string; r?: number }) {
+  // Nudged down from CY so more of the species' face stays visible above the neckline —
+  // capped so the widest shoulders (r=46) still land exactly on the viewBox's bottom edge.
+  const cy = CY + 6;
   switch (style) {
     case 'ninja':
-      return <Path d={`M${CX - BODY_R},${CY + 6} Q${CX},${CY + 26} ${CX + BODY_R},${CY + 6} L${CX + BODY_R},${CY + BODY_R} L${CX - BODY_R},${CY + BODY_R} Z`} fill="#2D3436" />;
+      return (
+        <G>
+          <Defs>
+            <LinearGradient id="ninjaGrad" x1="0" y1="0" x2="0" y2="1">
+              <Stop offset="0" stopColor="#4A4A4A" />
+              <Stop offset="1" stopColor="#1A1A1A" />
+            </LinearGradient>
+          </Defs>
+          <Path d={`M${CX - r},${cy + 6} Q${CX},${cy + 26} ${CX + r},${cy + 6} L${CX + r},${cy + r} L${CX - r},${cy + r} Z`} fill="url(#ninjaGrad)" />
+          <Path d={`M${CX - r},${cy + 6} Q${CX},${cy + 22} ${CX + r},${cy + 6}`} stroke="#000000" strokeWidth={1} opacity={0.4} fill="none" />
+          <Path d={`M${CX - r + 6},${cy + 12} L${CX + r - 6},${cy + 28}`} stroke="#B71C1C" strokeWidth={7} strokeLinecap="round" />
+          <Path d={`M${CX - r + 6},${cy + 12} L${CX + r - 6},${cy + 28}`} stroke="#E53935" strokeWidth={2} strokeLinecap="round" opacity={0.6} />
+          <Circle cx={CX} cy={cy + 20} r={6} fill="#2D2D2D" stroke="#B71C1C" strokeWidth={1.5} />
+          <Polygon points={`${CX},${cy + 16} ${CX + 1.2},${cy + 19.2} ${CX + 4.5},${cy + 19.2} ${CX + 1.9},${cy + 21.2} ${CX + 2.8},${cy + 24.5} ${CX},${cy + 22.4} ${CX - 2.8},${cy + 24.5} ${CX - 1.9},${cy + 21.2} ${CX - 4.5},${cy + 19.2} ${CX - 1.2},${cy + 19.2}`} fill="#FFD700" />
+        </G>
+      );
     case 'comfy':
       return (
         <G>
-          <Path d={`M${CX - BODY_R},${CY + 8} Q${CX},${CY + 24} ${CX + BODY_R},${CY + 8} L${CX + BODY_R},${CY + BODY_R} L${CX - BODY_R},${CY + BODY_R} Z`} fill="#FAB1A0" />
-          <Path d={`M${CX - 8},${CY + 8} L${CX},${CY + 16} L${CX + 8},${CY + 8}`} stroke="#E17B6F" strokeWidth={2} fill="none" />
+          <Defs>
+            <LinearGradient id="comfyGrad" x1="0" y1="0" x2="0" y2="1">
+              <Stop offset="0" stopColor="#FFC6BC" />
+              <Stop offset="1" stopColor="#F79E8E" />
+            </LinearGradient>
+          </Defs>
+          <Path d={`M${CX - r},${cy + 8} Q${CX},${cy + 24} ${CX + r},${cy + 8} L${CX + r},${cy + r} L${CX - r},${cy + r} Z`} fill="url(#comfyGrad)" />
+          <G stroke="#E17B6F" strokeWidth={1.5} opacity={0.7}>
+            <Path d={`M${CX - (r - 12)},${cy + 10} L${CX - (r - 12)},${cy + 16}`} />
+            <Path d={`M${CX - (r - 18)},${cy + 12} L${CX - (r - 18)},${cy + 18}`} />
+            <Path d={`M${CX + (r - 18)},${cy + 12} L${CX + (r - 18)},${cy + 18}`} />
+            <Path d={`M${CX + (r - 12)},${cy + 10} L${CX + (r - 12)},${cy + 16}`} />
+          </G>
+          <Path d={`M${CX - 8},${cy + 12} Q${CX - 4},${cy + 8} ${CX},${cy + 12} Q${CX + 4},${cy + 8} ${CX + 8},${cy + 12} Q${CX + 8},${cy + 18} ${CX},${cy + 22} Q${CX - 8},${cy + 18} ${CX - 8},${cy + 12} Z`} fill="#E8847A" />
+          <Path d={`M${CX - r},${cy + 8} Q${CX},${cy + 24} ${CX + r},${cy + 8}`} stroke="#FFFFFF" strokeWidth={1} opacity={0.5} fill="none" />
         </G>
       );
     case 'zen':
       return (
         <G>
-          <Path d={`M${CX - BODY_R},${CY + 4} Q${CX},${CY + 22} ${CX + BODY_R},${CY + 4} L${CX + BODY_R},${CY + BODY_R} L${CX - BODY_R},${CY + BODY_R} Z`} fill="#6C5CE7" />
-          <Path d={`M${CX - 10},${CY + 6} L${CX + 6},${CY + BODY_R}`} stroke="#5849C4" strokeWidth={2} />
-          <Path d={`M${CX + 10},${CY + 6} L${CX - 6},${CY + BODY_R}`} stroke="#5849C4" strokeWidth={2} />
+          <Defs>
+            <LinearGradient id="zenGrad" x1="0" y1="0" x2="0" y2="1">
+              <Stop offset="0" stopColor="#8875F0" />
+              <Stop offset="1" stopColor="#5849C4" />
+            </LinearGradient>
+          </Defs>
+          <Path d={`M${CX - r},${cy + 4} Q${CX},${cy + 22} ${CX + r},${cy + 4} L${CX + r},${cy + r} L${CX - r},${cy + r} Z`} fill="url(#zenGrad)" />
+          <Path d={`M${CX - r + 16},${cy + 6} L${CX + r - 10},${cy + r}`} stroke="#4A3BAA" strokeWidth={3} />
+          <Path d={`M${CX + r - 16},${cy + 6} L${CX - r + 10},${cy + r}`} stroke="#4A3BAA" strokeWidth={3} />
+          <Path d={`M${CX - r + 16},${cy + 6} L${CX + r - 10},${cy + r}`} stroke="#A395FF" strokeWidth={1} opacity={0.6} />
+          <Path d={`M${CX + r - 16},${cy + 6} L${CX - r + 10},${cy + r}`} stroke="#A395FF" strokeWidth={1} opacity={0.6} />
+          <Circle cx={CX} cy={cy + 20} r={7} fill="#FFFFFF" opacity={0.9} />
+          <Path d={`M${CX},${cy + 14} Q${CX + 4},${cy + 20} ${CX},${cy + 26} Q${CX - 4},${cy + 20} ${CX},${cy + 14} Z`} fill="#4A3BAA" />
         </G>
       );
     case 'star':
       return (
         <G>
-          <Path d={`M${CX - BODY_R},${CY} Q${CX},${CY + 30} ${CX + BODY_R},${CY} L${CX + BODY_R},${CY + BODY_R} L${CX - BODY_R},${CY + BODY_R} Z`} fill="#1E1B4B" />
-          <Polygon points="60,92 62,97 67,97 63,100 65,105 60,102 55,105 57,100 53,97 58,97" fill="#FFD700" />
+          <Defs>
+            <LinearGradient id="starGrad" x1="0" y1="0" x2="0" y2="1">
+              <Stop offset="0" stopColor="#2E2A6B" />
+              <Stop offset="1" stopColor="#12103A" />
+            </LinearGradient>
+          </Defs>
+          <Path d={`M${CX - r},${cy} Q${CX},${cy + 30} ${CX + r},${cy} L${CX + r},${cy + r} L${CX - r},${cy + r} Z`} fill="url(#starGrad)" />
+          <Circle cx={CX - 20} cy={cy + 10} r={1.4} fill="#FFFFFF" />
+          <Circle cx={CX + 20} cy={cy + 8} r={1.2} fill="#FFFFFF" />
+          <Circle cx={CX + 10} cy={cy + 22} r={1} fill="#FFFFFF" />
+          <Circle cx={CX - 12} cy={cy + 24} r={1} fill="#FFFFFF" />
+          <Polygon points={`${CX},${cy + 8} ${CX + 4},${cy + 14} ${CX + 10},${cy + 14} ${CX + 5},${cy + 18} ${CX + 6},${cy + 24} ${CX},${cy + 20} ${CX - 6},${cy + 24} ${CX - 5},${cy + 18} ${CX - 10},${cy + 14} ${CX - 4},${cy + 14}`} fill="#FFD700" />
+          <Polygon points={`${CX},${cy + 4} ${CX + 5},${cy + 12} ${CX + 14},${cy + 12} ${CX + 6},${cy + 17} ${CX + 8},${cy + 26} ${CX},${cy + 21} ${CX - 8},${cy + 26} ${CX - 6},${cy + 17} ${CX - 14},${cy + 12} ${CX - 5},${cy + 12}`} fill="none" stroke="#FFEE99" strokeWidth={0.6} opacity={0.7} />
         </G>
       );
     case 'astronaut':
       return (
         <G>
-          <Path d={`M${CX - BODY_R},${CY + 6} Q${CX},${CY + 24} ${CX + BODY_R},${CY + 6} L${CX + BODY_R},${CY + BODY_R} L${CX - BODY_R},${CY + BODY_R} Z`} fill="#ECF0F1" />
-          <Rect x={CX - BODY_R} y={CY + 6} width={BODY_R * 2} height={8} fill="#B2BEC3" />
-          <Circle cx={CX} cy={CY + 20} r={5} fill="#FF4757" />
+          <Defs>
+            <LinearGradient id="astroGrad" x1="0" y1="0" x2="0" y2="1">
+              <Stop offset="0" stopColor="#FFFFFF" />
+              <Stop offset="1" stopColor="#D4DADC" />
+            </LinearGradient>
+          </Defs>
+          <Path d={`M${CX - r},${cy + 6} Q${CX},${cy + 24} ${CX + r},${cy + 6} L${CX + r},${cy + r} L${CX - r},${cy + r} Z`} fill="url(#astroGrad)" />
+          <Path d={`M${CX - r + 6},${cy + 14} L${CX - r + 6},${cy + r + 4} M${CX + r - 6},${cy + 14} L${CX + r - 6},${cy + r + 4}`} stroke="#8FA3AA" strokeWidth={2} />
+          <Rect x={CX - r} y={cy + 6} width={r * 2} height={9} fill="#B2BEC3" />
+          <Circle cx={CX - 15} cy={cy + 10.5} r={2} fill="#78909C" />
+          <Circle cx={CX} cy={cy + 10.5} r={2} fill="#78909C" />
+          <Circle cx={CX + 15} cy={cy + 10.5} r={2} fill="#78909C" />
+          <Circle cx={CX} cy={cy + 24} r={6} fill="#FF4757" />
+          <Circle cx={CX} cy={cy + 24} r={6} fill="none" stroke="#B2BEC3" strokeWidth={1.5} />
+          <Path d={`M${CX - 4},${cy + 24} A4,4 0 0 1 ${CX + 4},${cy + 24}`} stroke="#FFFFFF" strokeWidth={1} fill="none" opacity={0.7} />
         </G>
       );
     case 'superhero':
       return (
         <G>
-          <Path d={`M${CX - BODY_R - 4},${CY} Q${CX},${CY + 40} ${CX + BODY_R + 4},${CY} L${CX + BODY_R + 2},${CY + BODY_R + 6} L${CX - BODY_R - 2},${CY + BODY_R + 6} Z`} fill="#D63031" />
-          <Path d={`M${CX - BODY_R},${CY + 6} Q${CX},${CY + 22} ${CX + BODY_R},${CY + 6} L${CX + BODY_R},${CY + BODY_R} L${CX - BODY_R},${CY + BODY_R} Z`} fill="#0984E3" />
-          <Polygon points={`${CX},${CY + 10} ${CX - 5},${CY + 18} ${CX + 5},${CY + 18}`} fill="#FFD700" />
+          <Defs>
+            <LinearGradient id="heroCapeGrad" x1="0" y1="0" x2="0" y2="1">
+              <Stop offset="0" stopColor="#EF5350" />
+              <Stop offset="1" stopColor="#B71C1C" />
+            </LinearGradient>
+            <LinearGradient id="heroSuitGrad" x1="0" y1="0" x2="0" y2="1">
+              <Stop offset="0" stopColor="#42A5F5" />
+              <Stop offset="1" stopColor="#0D5DAB" />
+            </LinearGradient>
+          </Defs>
+          <Path d={`M${CX - r - 4},${cy} Q${CX},${cy + 40} ${CX + r + 4},${cy} L${CX + r + 2},${cy + r + 6} L${CX - r - 2},${cy + r + 6} Z`} fill="url(#heroCapeGrad)" />
+          <Path d={`M${CX - r + 6},${cy + 4} Q${CX},${cy + 30} ${CX + r - 6},${cy + 4}`} stroke="#8B0000" strokeWidth={1} opacity={0.5} fill="none" />
+          <Path d={`M${CX},${cy} L${CX},${cy + r + 4}`} stroke="#8B0000" strokeWidth={1} opacity={0.35} />
+          <Path d={`M${CX - r},${cy + 6} Q${CX},${cy + 22} ${CX + r},${cy + 6} L${CX + r},${cy + r} L${CX - r},${cy + r} Z`} fill="url(#heroSuitGrad)" />
+          <Polygon points={`${CX},${cy + 10} ${CX - 6},${cy + 20} ${CX},${cy + 18} ${CX + 6},${cy + 20}`} fill="#FFD700" stroke="#E8A800" strokeWidth={0.5} />
+          <Circle cx={CX} cy={cy + 15} r={1.5} fill="#FFD700" />
+          <Rect x={CX - 10} y={cy + r} width={20} height={4} rx={2} fill="#2D3436" />
+          <Circle cx={CX} cy={cy + r + 2} r={2.5} fill="#FFD700" />
         </G>
       );
     case 'wizard':
       return (
         <G>
-          <Path d={`M${CX - BODY_R},${CY + 2} Q${CX},${CY + 20} ${CX + BODY_R},${CY + 2} L${CX + BODY_R},${CY + BODY_R} L${CX - BODY_R},${CY + BODY_R} Z`} fill="#4B2E83" />
-          <Circle cx={CX - 10} cy={CY + 16} r={1.6} fill="#FFD700" />
-          <Circle cx={CX + 8} cy={CY + 22} r={1.6} fill="#FFD700" />
-          <Circle cx={CX} cy={CY + 28} r={1.6} fill="#FFD700" />
+          <Defs>
+            <LinearGradient id="wizOutfitGrad" x1="0" y1="0" x2="0" y2="1">
+              <Stop offset="0" stopColor="#6A4CB8" />
+              <Stop offset="1" stopColor="#3A2266" />
+            </LinearGradient>
+          </Defs>
+          <Path d={`M${CX - r},${cy + 2} Q${CX},${cy + 20} ${CX + r},${cy + 2} L${CX + r},${cy + r} L${CX - r},${cy + r} Z`} fill="url(#wizOutfitGrad)" />
+          <Path d={`M${CX - r},${cy + 2} Q${CX},${cy + 20} ${CX + r},${cy + 2}`} stroke="#FFD700" strokeWidth={2} fill="none" opacity={0.85} />
+          <Circle cx={CX - 14} cy={cy + 12} r={1.4} fill="#FFD700" />
+          <Circle cx={CX} cy={cy + 18} r={1.4} fill="#FFD700" />
+          <Circle cx={CX + 14} cy={cy + 12} r={1.4} fill="#FFD700" />
+          <Path d={`M${CX},${cy + 22} Q${CX + 4},${cy + 26} ${CX},${cy + 32} Q${CX - 4},${cy + 26} ${CX},${cy + 22} Z`} fill="#FFD700" opacity={0.85} />
         </G>
       );
     case 'royal':
       return (
         <G>
-          <Path d={`M${CX - BODY_R},${CY + 4} Q${CX},${CY + 22} ${CX + BODY_R},${CY + 4} L${CX + BODY_R},${CY + BODY_R} L${CX - BODY_R},${CY + BODY_R} Z`} fill="#6C1B45" />
-          <Path d={`M${CX - BODY_R},${CY + 4} Q${CX},${CY + 16} ${CX + BODY_R},${CY + 4} L${CX + BODY_R},${CY + 10} Q${CX},${CY + 22} ${CX - BODY_R},${CY + 10} Z`} fill="#FDFEFE" />
-          <Circle cx={CX - 20} cy={CY + 7} r={1.4} fill="#2D3436" />
-          <Circle cx={CX} cy={CY + 9} r={1.4} fill="#2D3436" />
-          <Circle cx={CX + 20} cy={CY + 7} r={1.4} fill="#2D3436" />
-          <Circle cx={CX} cy={CY + 6} r={3} fill="#F1C40F" />
+          <Defs>
+            <LinearGradient id="royalGrad" x1="0" y1="0" x2="0" y2="1">
+              <Stop offset="0" stopColor="#8E2A63" />
+              <Stop offset="1" stopColor="#5C1638" />
+            </LinearGradient>
+          </Defs>
+          <Path d={`M${CX - r},${cy + 4} Q${CX},${cy + 16} ${CX + r},${cy + 4} L${CX + r},${cy + r} L${CX - r},${cy + r} Z`} fill="url(#royalGrad)" />
+          <Path d={`M${CX - r},${cy + 4} Q${CX},${cy + 16} ${CX + r},${cy + 4} L${CX + r},${cy + 10} Q${CX},${cy + 22} ${CX - r},${cy + 10} Z`} fill="#FDFEFE" />
+          <Circle cx={CX - r + 6} cy={cy + 6} r={1.3} fill="#2D3436" />
+          <Circle cx={CX - r / 2} cy={cy + 9} r={1.3} fill="#2D3436" />
+          <Circle cx={CX} cy={cy + 10} r={1.3} fill="#2D3436" />
+          <Circle cx={CX + r / 2} cy={cy + 9} r={1.3} fill="#2D3436" />
+          <Circle cx={CX + r - 6} cy={cy + 6} r={1.3} fill="#2D3436" />
+          <Path d={`M${CX - r},${cy + 4} Q${CX},${cy + 16} ${CX + r},${cy + 4}`} stroke="#F1C40F" strokeWidth={1.5} fill="none" opacity={0.8} />
+          <Path d={`M${CX},${cy + 12} L${CX + 3},${cy + 18} L${CX},${cy + 24} L${CX - 3},${cy + 18} Z`} fill="#E040FB" stroke="#F1C40F" strokeWidth={1} />
         </G>
       );
     case 'explorer':
       return (
         <G>
-          <Path d={`M${CX - BODY_R},${CY + 8} Q${CX},${CY + 22} ${CX + BODY_R},${CY + 8} L${CX + BODY_R},${CY + BODY_R} L${CX - BODY_R},${CY + BODY_R} Z`} fill="#C8A165" />
-          <Rect x={CX - 20} y={CY + 18} width={12} height={10} rx={2} fill="#A9825A" />
-          <Rect x={CX + 8} y={CY + 18} width={12} height={10} rx={2} fill="#A9825A" />
+          <Defs>
+            <LinearGradient id="explorerGrad" x1="0" y1="0" x2="0" y2="1">
+              <Stop offset="0" stopColor="#D8B889" />
+              <Stop offset="1" stopColor="#A9825A" />
+            </LinearGradient>
+          </Defs>
+          <Path d={`M${CX - r},${cy + 8} Q${CX},${cy + 22} ${CX + r},${cy + 8} L${CX + r},${cy + r} L${CX - r},${cy + r} Z`} fill="url(#explorerGrad)" />
+          <Rect x={CX - r + 12} y={cy + 18} width={12} height={10} rx={1.5} fill="#9C7A50" stroke="#7A5F3E" strokeWidth={1} />
+          <Rect x={CX + r - 24} y={cy + 18} width={12} height={10} rx={1.5} fill="#9C7A50" stroke="#7A5F3E" strokeWidth={1} />
+          <Circle cx={CX - r + 18} cy={cy + 18} r={1} fill="#5C4A30" />
+          <Circle cx={CX + r - 18} cy={cy + 18} r={1} fill="#5C4A30" />
+          <Circle cx={CX} cy={cy + 14} r={6} fill="#EFE7D6" stroke="#7A5F3E" strokeWidth={1} />
+          <Path d={`M${CX},${cy + 10} L${CX},${cy + 14} L${CX + 3},${cy + 16}`} stroke="#B71C1C" strokeWidth={1} fill="none" />
+          <Path d={`M${CX - r + 6},${cy + 10} L${CX - r + 6},${cy + r}`} stroke="#7A5F3E" strokeWidth={2} />
         </G>
       );
     case 'rainbow':
       return (
         <G>
-          <Path d={`M${CX - BODY_R},${CY + 6} Q${CX},${CY + 24} ${CX + BODY_R},${CY + 6} L${CX + BODY_R},${CY + BODY_R} L${CX - BODY_R},${CY + BODY_R} Z`} fill="#FFFFFF" />
+          <Path d={`M${CX - r},${cy + 6} Q${CX},${cy + 24} ${CX + r},${cy + 6} L${CX + r},${cy + r} L${CX - r},${cy + r} Z`} fill="#FFFFFF" />
           {['#FF4757', '#FFA502', '#FFD700', '#2ED573', '#1E90FF', '#A55EEA'].map((c, i) => (
-            <Rect key={i} x={CX - BODY_R} y={CY + 8 + i * 4.2} width={BODY_R * 2} height={4.2} fill={c} opacity={0.85} />
+            <G key={i}>
+              <Rect x={CX - r} y={cy + 8 + i * 4.2} width={r * 2} height={4.2} fill={c} opacity={0.85} />
+              <Rect x={CX - r} y={cy + 8 + i * 4.2} width={r * 2} height={1.4} fill="#FFFFFF" opacity={0.4} />
+            </G>
           ))}
+          <Circle cx={CX} cy={cy - 2} r={2} fill="#FFD700" />
+          <Circle cx={CX - 6} cy={cy} r={1.2} fill="#FFD700" />
+          <Circle cx={CX + 6} cy={cy} r={1.2} fill="#FFD700" />
         </G>
       );
     case 'artist':
       return (
         <G>
-          <Path d={`M${CX - BODY_R},${CY + 6} Q${CX},${CY + 24} ${CX + BODY_R},${CY + 6} L${CX + BODY_R},${CY + BODY_R} L${CX - BODY_R},${CY + BODY_R} Z`} fill="#F5F3EE" />
-          <Circle cx={CX - 14} cy={CY + 18} r={4} fill="#FF4757" opacity={0.8} />
-          <Circle cx={CX + 10} cy={CY + 24} r={5} fill="#1E90FF" opacity={0.8} />
-          <Circle cx={CX + 2} cy={CY + 12} r={3} fill="#FFD700" opacity={0.8} />
-          <Circle cx={CX - 6} cy={CY + 30} r={3.5} fill="#2ED573" opacity={0.8} />
+          <Defs>
+            <LinearGradient id="artistGrad" x1="0" y1="0" x2="0" y2="1">
+              <Stop offset="0" stopColor="#FFFEFA" />
+              <Stop offset="1" stopColor="#E8E2D0" />
+            </LinearGradient>
+          </Defs>
+          <Path d={`M${CX - r},${cy + 6} Q${CX},${cy + 24} ${CX + r},${cy + 6} L${CX + r},${cy + r} L${CX - r},${cy + r} Z`} fill="url(#artistGrad)" />
+          <Circle cx={CX - 14} cy={cy + 16} r={4} fill="#FF4757" opacity={0.85} />
+          <Circle cx={CX + 10} cy={cy + 22} r={5} fill="#1E90FF" opacity={0.85} />
+          <Circle cx={CX + 2} cy={cy + 12} r={3} fill="#FFD700" opacity={0.85} />
+          <Circle cx={CX - 6} cy={cy + 28} r={3.5} fill="#2ED573" opacity={0.85} />
+          <Circle cx={CX + 20} cy={cy + 12} r={2.5} fill="#A55EEA" opacity={0.85} />
+          <Path d={`M${CX - 25},${cy + 27} L${CX - 18},${cy + 18}`} stroke="#8D6E63" strokeWidth={2.5} strokeLinecap="round" />
+          <Path d={`M${CX - 20},${cy + 20} L${CX - 16},${cy + 16} L${CX - 13},${cy + 19} L${CX - 17},${cy + 23} Z`} fill="#4A3728" />
         </G>
       );
     case 'sporty':
       return (
         <G>
-          <Path d={`M${CX - BODY_R},${CY + 6} Q${CX},${CY + 24} ${CX + BODY_R},${CY + 6} L${CX + BODY_R},${CY + BODY_R} L${CX - BODY_R},${CY + BODY_R} Z`} fill="#2ED573" />
-          <Path d={`M${CX - 10},${CY + 6} L${CX - 10},${CY + BODY_R}`} stroke="#FFFFFF" strokeWidth={3} />
-          <Path d={`M${CX + 10},${CY + 6} L${CX + 10},${CY + BODY_R}`} stroke="#FFFFFF" strokeWidth={3} />
+          <Defs>
+            <LinearGradient id="sportyGrad" x1="0" y1="0" x2="0" y2="1">
+              <Stop offset="0" stopColor="#3EDC7F" />
+              <Stop offset="1" stopColor="#1FA05C" />
+            </LinearGradient>
+          </Defs>
+          <Path d={`M${CX - r},${cy + 6} Q${CX},${cy + 24} ${CX + r},${cy + 6} L${CX + r},${cy + r} L${CX - r},${cy + r} Z`} fill="url(#sportyGrad)" />
+          <Path d={`M${CX - r},${cy + 6} Q${CX},${cy + 24} ${CX + r},${cy + 6}`} stroke="#FFFFFF" strokeWidth={1.5} opacity={0.5} fill="none" />
+          <Path d={`M${CX - r + 10},${cy + 8} L${CX - r + 10},${cy + r}`} stroke="#FFFFFF" strokeWidth={3} />
+          <Path d={`M${CX + r - 10},${cy + 8} L${CX + r - 10},${cy + r}`} stroke="#FFFFFF" strokeWidth={3} />
+          <Path d={`M${CX - 3},${cy + 16} L${CX - 3},${cy + 28} M${CX - 3},${cy + 16} L${CX + 3},${cy + 16} Q${CX + 6},${cy + 16} ${CX + 6},${cy + 20} Q${CX + 6},${cy + 22} ${CX + 3},${cy + 22} L${CX - 3},${cy + 22}`} stroke="#FFFFFF" strokeWidth={2} fill="none" strokeLinecap="round" strokeLinejoin="round" />
         </G>
       );
     case 'pajama':
       return (
         <G>
-          <Path d={`M${CX - BODY_R},${CY + 6} Q${CX},${CY + 24} ${CX + BODY_R},${CY + 6} L${CX + BODY_R},${CY + BODY_R} L${CX - BODY_R},${CY + BODY_R} Z`} fill="#A29BFE" />
-          <Circle cx={CX - 12} cy={CY + 18} r={2} fill="#FFFFFF" opacity={0.8} />
-          <Circle cx={CX + 8} cy={CY + 26} r={2} fill="#FFFFFF" opacity={0.8} />
-          <Circle cx={CX + 2} cy={CY + 14} r={2} fill="#FFFFFF" opacity={0.8} />
-          <Path d={`M${CX - 8},${CY + 6} L${CX},${CY + 14} L${CX + 8},${CY + 6}`} stroke="#FFFFFF" strokeWidth={2} fill="none" />
+          <Defs>
+            <LinearGradient id="pajamaGrad" x1="0" y1="0" x2="0" y2="1">
+              <Stop offset="0" stopColor="#BCB4FF" />
+              <Stop offset="1" stopColor="#8B7EE8" />
+            </LinearGradient>
+          </Defs>
+          <Path d={`M${CX - r},${cy + 6} Q${CX},${cy + 24} ${CX + r},${cy + 6} L${CX + r},${cy + r} L${CX - r},${cy + r} Z`} fill="url(#pajamaGrad)" />
+          <Circle cx={CX - 18} cy={cy + 16} r={1.6} fill="#FFFFFF" opacity={0.9} />
+          <Circle cx={CX - 2} cy={cy + 12} r={1.6} fill="#FFFFFF" opacity={0.9} />
+          <Circle cx={CX + 16} cy={cy + 18} r={1.6} fill="#FFFFFF" opacity={0.9} />
+          <Circle cx={CX + 6} cy={cy + 26} r={1.4} fill="#FFFFFF" opacity={0.8} />
+          <Circle cx={CX - 10} cy={cy + 28} r={1.4} fill="#FFFFFF" opacity={0.8} />
+          <Path d={`M${CX - 12},${cy + 10} Q${CX - 8},${cy + 6} ${CX - 4},${cy + 10} Q${CX},${cy + 6} ${CX + 4},${cy + 10}`} stroke="#FFFFFF" strokeWidth={1.5} fill="none" opacity={0.85} />
+          <Path d={`M${CX - r},${cy + 6} Q${CX},${cy + 24} ${CX + r},${cy + 6}`} stroke="#FFFFFF" strokeWidth={1} opacity={0.5} fill="none" />
         </G>
       );
     case 'flower':
       return (
         <G>
-          <Path d={`M${CX - BODY_R},${CY + 6} Q${CX},${CY + 24} ${CX + BODY_R},${CY + 6} L${CX + BODY_R},${CY + BODY_R} L${CX - BODY_R},${CY + BODY_R} Z`} fill="#FFEAA7" />
-          {[[CX - 14, CY + 16], [CX + 10, CY + 20], [CX, CY + 28]].map(([fx, fy], i) => (
-            <G key={i}>
-              <Circle cx={fx} cy={fy} r={4} fill="#FF6FA5" />
-              <Circle cx={fx} cy={fy} r={1.6} fill="#FFD700" />
-            </G>
-          ))}
+          <Defs>
+            <LinearGradient id="flowerOutfitGrad" x1="0" y1="0" x2="0" y2="1">
+              <Stop offset="0" stopColor="#FFF3C4" />
+              <Stop offset="1" stopColor="#FFE082" />
+            </LinearGradient>
+          </Defs>
+          <Path d={`M${CX - r},${cy + 6} Q${CX},${cy + 24} ${CX + r},${cy + 6} L${CX + r},${cy + r} L${CX - r},${cy + r} Z`} fill="url(#flowerOutfitGrad)" />
+          <Path d={`M${CX - 20},${cy + 22} Q${CX - 15},${cy + 12} ${CX - 10},${cy + 22}`} stroke="#7CB342" strokeWidth={1.5} fill="none" />
+          <Path d={`M${CX + 5},${cy + 24} Q${CX + 8},${cy + 18} ${CX + 12},${cy + 24}`} stroke="#7CB342" strokeWidth={1.5} fill="none" />
+          <G><Circle cx={CX - 14} cy={cy + 16} r={4} fill="#FF6FA5" /><Circle cx={CX - 14} cy={cy + 16} r={1.6} fill="#FFD700" /></G>
+          <G><Circle cx={CX + 10} cy={cy + 20} r={4.5} fill="#FF8FAB" /><Circle cx={CX + 10} cy={cy + 20} r={1.8} fill="#FFD700" /></G>
+          <G><Circle cx={CX} cy={cy + 28} r={3.5} fill="#FFB3C7" /><Circle cx={CX} cy={cy + 28} r={1.4} fill="#FFD700" /></G>
+          <G><Circle cx={CX + 22} cy={cy + 14} r={3} fill="#F06292" /><Circle cx={CX + 22} cy={cy + 14} r={1.2} fill="#FFD700" /></G>
         </G>
       );
   }
 }
 
+// Head art sits at a fixed height (HEAD_H) with its own width scaled to match each image's
+// aspect ratio, centered on CX — this keeps every species reading as the same size even
+// though the source images range from square to wide (koala) to tall (owl). The vertical
+// placement (HEAD_Y) and the Hat/Outfit geometry below were tuned together so a hat sits on
+// top of the head and an outfit's collar peeks out beneath the chin, matching where they sat
+// on the old hand-drawn body.
+const HEAD_H = 84, HEAD_Y = 34;
+
 export default function PetAvatar({
-  species, bodyColor, accentColor, muzzleColor, eyes, hair = 'None', hat = null, outfit = null, size = 120,
+  species, bodyColor, hat = null, outfit = null, size = 120,
 }: Props) {
+  const source = SPECIES_IMAGES[species] ?? SPECIES_IMAGES.Bear;
+  const aspect = SPECIES_ASPECT[species] ?? 1;
+  const headW = HEAD_H * aspect;
+  const headX = CX - headW / 2;
+  // Shoulders track the head's own width (clamped) so a wide-headed koala gets broader
+  // shoulders than a narrow owl, instead of every species sharing one fixed torso width.
+  const bodyHalfW = Math.max(26, Math.min(46, headW * 0.45));
+
   return (
     <Svg width={size} height={size * (130 / 120)} viewBox="0 0 120 130">
-      {outfit && <Outfit style={outfit} bodyColor={bodyColor} />}
-      <Ears species={species} bodyColor={bodyColor} accentColor={accentColor} />
-      {hair !== 'None' && <Hair style={hair} />}
-      <Circle cx={CX} cy={CY} r={BODY_R} fill={bodyColor} />
-      {species === 'Zebra' && (
-        <G stroke="#2C2C2C" strokeWidth={2.5} strokeLinecap="round" opacity={0.55}>
-          <Path d={`M${CX - 18},${CY - 14} Q${CX},${CY - 18} ${CX + 18},${CY - 14}`} />
-          <Path d={`M${CX - 20},${CY - 2} Q${CX},${CY - 6} ${CX + 20},${CY - 2}`} />
-          <Path d={`M${CX - 18},${CY + 10} Q${CX},${CY + 6} ${CX + 18},${CY + 10}`} />
-        </G>
-      )}
-      <Eyes style={eyes} />
-      <Ellipse cx={CX - 20} cy={CY + 2} rx={7} ry={4} fill={accentColor} opacity={0.35} />
-      <Ellipse cx={CX + 20} cy={CY + 2} rx={7} ry={4} fill={accentColor} opacity={0.35} />
-      <Ellipse cx={CX} cy={CY + 10} rx={16} ry={10} fill={muzzleColor} />
-      <Ellipse cx={CX} cy={CY + 7} rx={4} ry={2.5} fill="#8B4513" />
-      {(species === 'Cat' || species === 'Fox' || species === 'Red Panda') && (
-        <G stroke="#7F8C8D" strokeWidth={1.2} strokeLinecap="round">
-          <Path d={`M${CX - 16},${CY + 12} L${CX - 28},${CY + 9}`} />
-          <Path d={`M${CX + 16},${CY + 12} L${CX + 28},${CY + 9}`} />
-        </G>
+      <SvgImage href={source} x={headX} y={HEAD_Y} width={headW} height={HEAD_H} preserveAspectRatio="xMidYMid meet" />
+      {outfit ? (
+        <Outfit style={outfit} bodyColor={bodyColor} r={bodyHalfW} />
+      ) : (
+        <Path d={`M${CX - bodyHalfW},124 Q${CX - bodyHalfW},90 ${CX},90 Q${CX + bodyHalfW},90 ${CX + bodyHalfW},124 Z`} fill={bodyColor} />
       )}
       {hat && <Hat style={hat} />}
+    </Svg>
+  );
+}
+
+// Cropped views of just the Hat/Outfit graphic, for shop & wardrobe thumbnails —
+// the crop boxes are hand-tuned to frame each item family within the shared 120x130 geometry.
+export function HatIcon({ style, size = 44 }: { style: HatStyle; size?: number }) {
+  return (
+    <Svg width={size} height={size} viewBox="10 0 100 66">
+      <Hat style={style} />
+    </Svg>
+  );
+}
+
+export function OutfitIcon({ style, size = 44 }: { style: OutfitStyle; size?: number }) {
+  return (
+    <Svg width={size} height={size} viewBox="16 70 88 50">
+      <Outfit style={style} bodyColor="#FFFFFF" />
     </Svg>
   );
 }

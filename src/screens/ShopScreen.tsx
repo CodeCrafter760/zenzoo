@@ -1,20 +1,30 @@
-import React, { useRef } from 'react';
-import { StyleSheet, Text, View, ScrollView, TouchableOpacity, Alert, Animated } from 'react-native';
+import React, { useRef, useState } from 'react';
+import { StyleSheet, Text, View, ScrollView, TouchableOpacity, Alert, Animated, LayoutAnimation, Platform, UIManager } from 'react-native';
 import { useZenZoo, shopCatalog } from '../context/ZenZooContext';
 import { LIGHT_THEME, DARK_THEME, PALETTE, RADIUS, SHADOW } from '../theme/theme';
 import { tapHaptic } from '../utils/haptics';
 import { Feather } from '@expo/vector-icons';
 import FontAwesome5 from '@expo/vector-icons/FontAwesome5';
+import { HatIcon, OutfitIcon, hatStyleFromId, outfitStyleFromId } from '../components/sprites/PetAvatar';
+import type { ColorRarity } from '../data/shop/types';
 
 const CAT_CFG = {
-  Backgrounds: { icon: '🖼️', color: PALETTE.sky,    bg: '#EAF6FD', label: 'Backgrounds' },
+  Backgrounds: { icon: '🎨', color: PALETTE.sky,    bg: '#EAF6FD', label: 'Backgrounds' },
   Hats:        { icon: '🎩', color: PALETTE.purple,  bg: '#F0EDFF', label: 'Hats'        },
   Outfits:     { icon: '👕', color: PALETTE.coral,   bg: '#FFF0EC', label: 'Outfits'     },
 } as const;
 
+const RARITY_COLORS: Record<ColorRarity, string> = {
+  Starter: '#95A5A6', Common: '#7F8C8D', Uncommon: '#2ECC71', Rare: '#3498DB', Epic: '#9B59B6', Legendary: '#F1C40F',
+};
+
+if (Platform.OS === 'android' && UIManager.setLayoutAnimationEnabledExperimental) {
+  UIManager.setLayoutAnimationEnabledExperimental(true);
+}
+
 // ── Animated shop item card ─────────────────────────────────────────────────
 interface ItemCardProps {
-  item: { id: string; name: string; cost: number; category: 'Backgrounds' | 'Hats' | 'Outfits' };
+  item: { id: string; name: string; cost: number; category: 'Backgrounds' | 'Hats' | 'Outfits'; type?: string; rarity?: ColorRarity };
   catCfg: typeof CAT_CFG[keyof typeof CAT_CFG];
   owned: boolean;
   isDark: boolean;
@@ -42,7 +52,20 @@ function ShopItemCard({ item, catCfg, owned, isDark, cardBg, cardBorder, onPurch
       activeOpacity={1}
     >
       <View style={[styles.thumb, { backgroundColor: isDark ? catCfg.color + '18' : catCfg.bg }]}>
-        <Text style={styles.thumbEmoji}>{catCfg.icon}</Text>
+        {item.category === 'Backgrounds' && item.type ? (
+          <View style={[styles.thumbImage, { backgroundColor: item.type }]} />
+        ) : item.category === 'Hats' && hatStyleFromId(item.id) ? (
+          <HatIcon style={hatStyleFromId(item.id)!} size={60} />
+        ) : item.category === 'Outfits' && outfitStyleFromId(item.id) ? (
+          <OutfitIcon style={outfitStyleFromId(item.id)!} size={60} />
+        ) : (
+          <Text style={styles.thumbEmoji}>{catCfg.icon}</Text>
+        )}
+        {item.rarity && (
+          <View style={[styles.rarityBadge, { backgroundColor: RARITY_COLORS[item.rarity] }]}>
+            <Text style={styles.rarityBadgeText}>{t(item.rarity)}</Text>
+          </View>
+        )}
         {owned && (
           <View style={styles.ownedBadge}>
             <Feather name="check" size={10} color="#FFF" />
@@ -75,6 +98,13 @@ export default function ShopScreen({ onNavigate }: { onNavigate?: (s: string) =>
   const T = isDark ? DARK_THEME : LIGHT_THEME;
   // The "how to earn" economics explainer is extra reading a toddler doesn't need.
   const isToddler = ageGroup === 'Toddler (2-4)';
+  const [openCat, setOpenCat] = useState<'Backgrounds' | 'Hats' | 'Outfits' | null>('Backgrounds');
+
+  const toggleCat = (cat: 'Backgrounds' | 'Hats' | 'Outfits') => {
+    tapHaptic();
+    LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
+    setOpenCat(prev => (prev === cat ? null : cat));
+  };
 
   if (shopLocked) {
     return (
@@ -152,27 +182,36 @@ export default function ShopScreen({ onNavigate }: { onNavigate?: (s: string) =>
         {categories.map(cat => {
           const catItems = shopCatalog.filter(i => i.category === cat);
           const catCfg   = CAT_CFG[cat];
+          const isOpen   = openCat === cat;
           return (
             <View key={cat} style={styles.catSection}>
-              <View style={[styles.catHeader, { backgroundColor: isDark ? catCfg.color + '22' : catCfg.bg, borderColor: catCfg.color + '55' }]}>
+              <TouchableOpacity
+                style={[styles.catHeader, { backgroundColor: isDark ? catCfg.color + '22' : catCfg.bg, borderColor: catCfg.color + '55' }]}
+                onPress={() => toggleCat(cat)}
+                activeOpacity={0.75}
+              >
                 <Text style={styles.catIcon}>{catCfg.icon}</Text>
                 <Text style={[styles.catLabel, { color: catCfg.color }]}>{catCfg.label}</Text>
-              </View>
+                <Text style={[styles.catCount, { color: catCfg.color }]}>{catItems.length}</Text>
+                <Feather name={isOpen ? 'chevron-up' : 'chevron-down'} size={20} color={catCfg.color} />
+              </TouchableOpacity>
 
-              <View style={styles.grid}>
-                {catItems.map(item => (
-                  <ShopItemCard
-                    key={item.id}
-                    item={item}
-                    catCfg={catCfg}
-                    owned={ownedItems.includes(item.id)}
-                    isDark={isDark}
-                    cardBg={T.card}
-                    cardBorder={T.edge}
-                    onPurchase={handlePurchase}
-                  />
-                ))}
-              </View>
+              {isOpen && (
+                <View style={styles.grid}>
+                  {catItems.map(item => (
+                    <ShopItemCard
+                      key={item.id}
+                      item={item}
+                      catCfg={catCfg}
+                      owned={ownedItems.includes(item.id)}
+                      isDark={isDark}
+                      cardBg={T.card}
+                      cardBorder={T.edge}
+                      onPurchase={handlePurchase}
+                    />
+                  ))}
+                </View>
+              )}
             </View>
           );
         })}
@@ -217,15 +256,19 @@ const styles = StyleSheet.create({
   catSection: { marginBottom: 18 },
   catHeader:  { flexDirection: 'row', alignItems: 'center', gap: 8, borderRadius: RADIUS.md, padding: 12, marginBottom: 10, borderWidth: 1 },
   catIcon:    { fontSize: 22 },
-  catLabel:   { fontSize: 16, fontWeight: '900' },
+  catLabel:   { fontSize: 16, fontWeight: '900', flex: 1 },
+  catCount:   { fontSize: 13, fontWeight: '800', opacity: 0.7 },
 
   grid:     { flexDirection: 'row', flexWrap: 'wrap', gap: 10 },
   itemCard: { width: '47.5%', borderRadius: RADIUS.lg, padding: 12, borderWidth: 1.5, alignItems: 'center' },
 
-  thumb:     { width: '100%', height: 84, borderRadius: RADIUS.md, justifyContent: 'center', alignItems: 'center', marginBottom: 8, position: 'relative' },
+  thumb:     { width: '100%', height: 84, borderRadius: RADIUS.md, justifyContent: 'center', alignItems: 'center', marginBottom: 8, position: 'relative', overflow: 'hidden' },
   thumbEmoji: { fontSize: 34 },
+  thumbImage: { width: '100%', height: '100%' },
   ownedBadge: { position: 'absolute', top: 6, right: 6, width: 22, height: 22, borderRadius: 11, backgroundColor: PALETTE.mint, justifyContent: 'center', alignItems: 'center' },
   ownedBadgeText: { fontSize: 12, fontWeight: '900', color: '#FFF' },
+  rarityBadge: { position: 'absolute', bottom: 6, left: 6, paddingHorizontal: 6, paddingVertical: 2, borderRadius: RADIUS.sm },
+  rarityBadgeText: { fontSize: 9, fontWeight: '900', color: '#FFF' },
 
   itemName: { fontSize: 13, fontWeight: '800', marginBottom: 2, textAlign: 'center' },
   itemCat:  { fontSize: 11, fontWeight: '600', marginBottom: 10 },

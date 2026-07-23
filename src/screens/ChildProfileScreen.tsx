@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import {
   StyleSheet, Text, View, ScrollView, SafeAreaView,
-  TouchableOpacity, TextInput, Alert,
+  TouchableOpacity, TextInput, Alert, ActivityIndicator,
 } from 'react-native';
 import { useZenZoo } from '../context/ZenZooContext';
 import type { ChildProfile, StoryAgeGroup } from '../context/ZenZooContext';
@@ -50,10 +50,14 @@ export function ChildOnboardingFlow({ onCancel, onFinish }: { onCancel?: () => v
   const [name, setName] = useState('');
   const [ageGroup, setAgeGroup] = useState<StoryAgeGroup>('Preschool (4-6)');
   const [speciesType, setSpeciesType] = useState(STARTER_SPECIES[0].type);
+  const [saving, setSaving] = useState(false);
 
-  const finish = () => {
+  const finish = async () => {
+    if (saving) return;
+    setSaving(true);
     const spec = findSpecies(speciesType);
-    addChildProfile(name, spec.type, spec.color, spec.eyes, ageGroup);
+    await addChildProfile(name, spec.type, spec.color, spec.eyes, ageGroup);
+    setSaving(false);
     successHaptic();
     onFinish?.();
   };
@@ -151,8 +155,8 @@ export function ChildOnboardingFlow({ onCancel, onFinish }: { onCancel?: () => v
             );
           })}
         </View>
-        <TouchableOpacity style={[styles.primaryBtn, { backgroundColor: CHILD_ACCENT }]} onPress={finish} activeOpacity={0.85}>
-          <Text style={styles.primaryBtnText}>{t("Let's Go!")}</Text>
+        <TouchableOpacity style={[styles.primaryBtn, { backgroundColor: CHILD_ACCENT, opacity: saving ? 0.6 : 1 }]} onPress={finish} activeOpacity={0.85} disabled={saving}>
+          {saving ? <ActivityIndicator color="#FFF" /> : <Text style={styles.primaryBtnText}>{t("Let's Go!")}</Text>}
         </TouchableOpacity>
       </ScrollView>
     </SafeAreaView>

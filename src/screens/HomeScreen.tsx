@@ -223,7 +223,7 @@ export default function HomeScreen({ onNavigate }: { onNavigate?: (screen: strin
 
         {/* ── Pet hero scene ── */}
         <View style={styles.petCard}>
-          <PetBackground bgType={activeBg?.type} />
+          <PetBackground bgColor={activeBg?.type} />
           <View style={styles.petCardInner}>
             <PetCircle
               species={genetics.species}
@@ -394,7 +394,7 @@ const styles = StyleSheet.create({
   bedtimeEmoji:  { fontSize: 18 },
   bedtimeText:   { fontSize: 13, fontWeight: '700', flex: 1 },
 
-  petCard:      { borderRadius: RADIUS.xl, height: 260, marginBottom: 16, overflow: 'hidden', shadowColor: PALETTE.purple, ...SHADOW.lg },
+  petCard:      { borderRadius: RADIUS.xl, height: 420, marginHorizontal: -18, marginBottom: 16, overflow: 'hidden', shadowColor: PALETTE.purple, ...SHADOW.lg },
   petCardInner: { flex: 1, justifyContent: 'center', alignItems: 'center' },
 
   sectionTitle: { fontSize: 17, fontWeight: '900', marginBottom: 14 },

@@ -1,10 +1,13 @@
 export type ShopCategory = 'Backgrounds' | 'Hats' | 'Outfits';
+export type ColorRarity = 'Starter' | 'Common' | 'Uncommon' | 'Rare' | 'Epic' | 'Legendary';
 
 export interface ShopItem {
   id: string;
   name: string;
   cost: number;
   category: ShopCategory;
-  /** Background variant key consumed by `PetBackground`'s `bgType` prop. Only set for Backgrounds. */
+  /** Hex color consumed by `PetBackground`'s `bgColor` prop. Only set for Backgrounds. */
   type?: string;
+  /** Only set for Backgrounds — drives cost tiering and the rarity badge in the shop. */
+  rarity?: ColorRarity;
 }

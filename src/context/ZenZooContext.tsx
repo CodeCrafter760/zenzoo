@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
+import type { Session } from '@supabase/supabase-js';
 export { LIGHT_THEME, DARK_THEME } from '../theme/theme';
 export { SHOP_CATALOG as shopCatalog } from '../data/shop';
 import { SHOP_CATALOG as shopCatalog } from '../data/shop';
@@ -6,6 +7,7 @@ import type { StoryAgeGroup } from '../data/stories/types';
 export type { StoryAgeGroup } from '../data/stories/types';
 import { translate, type Language } from '../i18n';
 export type { Language } from '../i18n';
+import { supabase } from '../lib/supabase';
 
 export const COINS_PER_LEVEL = 50;
 
@@ -34,17 +36,16 @@ export interface EquippedItems {
   Outfits: string | null;
 }
 
+// The signed-in parent's own display profile — 1:1 with their Supabase Auth
+// account. Real identity/credentials live in Supabase Auth; this just holds
+// the bits the UI shows (name, avatar, color) plus the quick-access PIN that
+// gates the dashboard on a shared family device.
 export interface ParentProfile {
   id: string;
   name: string;
-  pin: string;
-  color: string;
   avatar: string;
-  securityQuestion: string | null;
-  securityAnswer: string | null;
-  failedAttempts: number;
-  lockedUntil: number | null;
-  childIds: string[];
+  color: string;
+  pin: string | null;
 }
 
 export interface ChildProfile {
@@ -70,10 +71,85 @@ export interface ChildProfile {
 }
 
 const DEFAULT_GENETICS: Genetics = { bodyColor: '#FFD3B6', eyes: 'Wonder', hair: 'None', species: 'Bear' };
-const DEFAULT_EQUIPPED: EquippedItems = { Backgrounds: 'bg_meadow', Hats: null, Outfits: null };
+const STARTER_BACKGROUNDS = ['bg_sky_blue', 'bg_sunny_yellow'];
+const DEFAULT_EQUIPPED: EquippedItems = { Backgrounds: STARTER_BACKGROUNDS[0], Hats: null, Outfits: null };
 const DEFAULT_AGE_GROUP: StoryAgeGroup = 'Preschool (4-6)';
 
+// ── Supabase row <-> local shape helpers ─────────────────────────────────────
+// The `children` table stores genetics/equipped/inventory/entries as JSON
+// columns, so a fetched row maps directly onto ChildProfile except for the
+// snake_case <-> camelCase field names.
+function rowToChild(row: any): ChildProfile {
+  return {
+    id: row.id,
+    name: row.name,
+    ageGroup: row.age_group,
+    genetics: row.genetics,
+    equipped: row.equipped,
+    ownedItems: row.owned_items,
+    calmCoins: row.calm_coins,
+    streak: row.streak,
+    journalEntries: row.journal_entries,
+    moodEntries: row.mood_entries,
+    screenTimeMinutes: row.screen_time_minutes,
+    focusMinutes: row.focus_minutes,
+    focusSessionsCompleted: row.focus_sessions_completed,
+    breathingSessions: row.breathing_sessions,
+    totalCoinsEarned: row.total_coins_earned,
+    longestStreak: row.longest_streak,
+    shopLocked: row.shop_locked,
+    dailyLimitMinutes: row.daily_limit_minutes,
+    bedtimeHour: row.bedtime_hour,
+  };
+}
+
+function childToRow(c: ChildProfile) {
+  return {
+    name: c.name,
+    age_group: c.ageGroup,
+    genetics: c.genetics,
+    equipped: c.equipped,
+    owned_items: c.ownedItems,
+    calm_coins: c.calmCoins,
+    streak: c.streak,
+    journal_entries: c.journalEntries,
+    mood_entries: c.moodEntries,
+    screen_time_minutes: c.screenTimeMinutes,
+    focus_minutes: c.focusMinutes,
+    focus_sessions_completed: c.focusSessionsCompleted,
+    breathing_sessions: c.breathingSessions,
+    total_coins_earned: c.totalCoinsEarned,
+    longest_streak: c.longestStreak,
+    shop_locked: c.shopLocked,
+    daily_limit_minutes: c.dailyLimitMinutes,
+    bedtime_hour: c.bedtimeHour,
+  };
+}
+
+function rowToProfile(row: any): ParentProfile {
+  return { id: row.id, name: row.name, avatar: row.avatar, color: row.color, pin: row.pin };
+}
+
+interface AuthResult {
+  error: string | null;
+}
+
 interface ZenZooContextType {
+  // Auth — one Supabase account per family device. Session persists across
+  // app restarts, so this only gates the very first setup (or after sign-out).
+  session: Session | null;
+  authLoading: boolean;
+  profile: ParentProfile | null;
+  signUp: (email: string, password: string, name: string) => Promise<AuthResult>;
+  signIn: (email: string, password: string) => Promise<AuthResult>;
+  signOut: () => Promise<void>;
+  resetPasswordForEmail: (email: string) => Promise<AuthResult>;
+  reauthenticate: (password: string) => Promise<AuthResult>;
+  setProfilePin: (pin: string | null) => Promise<void>;
+  updateProfile: (updates: Partial<Pick<ParentProfile, 'name' | 'color' | 'avatar'>>) => Promise<void>;
+  isParentUnlocked: boolean;
+  unlockParent: () => void;
+  lockParent: () => void;
   // Active child's data — always reflects whichever child profile is currently selected
   ageGroup: StoryAgeGroup;
   genetics: Genetics;
@@ -95,26 +171,15 @@ interface ZenZooContextType {
   addJournalEntry: (content: string) => void;
   moodEntries: MoodEntry[];
   addMoodEntry: (mood: string, tags: string[], note: string) => void;
-  // Child profiles — one per kid using the app, freely switchable
+  // Child profiles — one per kid using the app, backed by Supabase, scoped to
+  // whichever parent account is currently signed in
   childProfiles: ChildProfile[];
+  childrenLoading: boolean;
   activeChildId: string | null;
-  addChildProfile: (name: string, species: string, bodyColor: string, eyes: string, ageGroup: StoryAgeGroup) => string;
+  addChildProfile: (name: string, species: string, bodyColor: string, eyes: string, ageGroup: StoryAgeGroup) => Promise<void>;
   switchChild: (id: string) => void;
   renameChildProfile: (id: string, name: string) => void;
   deleteChildProfile: (id: string) => void;
-  // Parent Dashboard — auth (multiple parent profiles, each with its own PIN)
-  parentProfiles: ParentProfile[];
-  activeParentId: string | null;
-  isParentUnlocked: boolean;
-  addParentProfile: (name: string, pin: string, color: string, avatar: string, question: string, answer: string, childIds: string[]) => string;
-  updateParentProfile: (id: string, updates: Partial<Pick<ParentProfile, 'name' | 'color' | 'avatar' | 'childIds'>>) => void;
-  deleteParentProfile: (id: string) => void;
-  setProfilePin: (id: string, pin: string) => void;
-  setProfileSecurity: (id: string, question: string, answer: string) => void;
-  verifyProfileSecurityAnswer: (id: string, answer: string) => boolean;
-  registerProfileFailedAttempt: (id: string) => void;
-  unlockParent: (id: string) => void;
-  lockParent: () => void;
   // Parent Dashboard — stats (active child)
   screenTimeMinutes: number;
   focusMinutes: number;
@@ -144,67 +209,160 @@ interface ZenZooContextType {
 
 const ZenZooContext = createContext<ZenZooContextType | undefined>(undefined);
 
-const genId = () => Math.random().toString(36).slice(2, 10);
-
-function makeChildProfile(id: string, name: string, species: string, bodyColor: string, eyes: string, ageGroup: StoryAgeGroup): ChildProfile {
-  return {
-    id,
-    name: name.trim() || 'Explorer',
-    ageGroup,
-    genetics: { bodyColor, eyes, hair: 'None', species },
-    equipped: { ...DEFAULT_EQUIPPED },
-    ownedItems: ['bg_meadow'],
-    calmCoins: 0,
-    streak: 1,
-    journalEntries: [],
-    moodEntries: [],
-    screenTimeMinutes: 0,
-    focusMinutes: 0,
-    focusSessionsCompleted: 0,
-    breathingSessions: 0,
-    totalCoinsEarned: 0,
-    longestStreak: 1,
-    shopLocked: false,
-    dailyLimitMinutes: null,
-    bedtimeHour: null,
-  };
-}
-
 export function ZenZooProvider({ children }: { children: React.ReactNode }) {
   const [isDark,   setIsDark]   = useState(false);
   const [isAdmin,  setIsAdmin]  = useState(false);
-  const [language, setLanguage] = useState<Language>('en');
+  const [languageState, setLanguageState] = useState<Language>('en');
   const toggleDark  = () => setIsDark(d => !d);
   const toggleAdmin = () => setIsAdmin(a => !a);
-  const t = (s: string) => translate(language, s);
+  const t = (s: string) => translate(languageState, s);
+
+  // ── Auth ──────────────────────────────────────────────────────────────────
+  const [session, setSession] = useState<Session | null>(null);
+  const [authLoading, setAuthLoading] = useState(true);
+  const [profile, setProfile] = useState<ParentProfile | null>(null);
+  const [isParentUnlocked, setIsParentUnlocked] = useState(false);
+
+  useEffect(() => {
+    supabase.auth.getSession().then(({ data }) => {
+      setSession(data.session);
+      setAuthLoading(false);
+    });
+    const { data: sub } = supabase.auth.onAuthStateChange((_event, sess) => {
+      setSession(sess);
+    });
+    return () => sub.subscription.unsubscribe();
+  }, []);
+
+  useEffect(() => {
+    if (!session) {
+      setProfile(null);
+      setChildProfiles([]);
+      setActiveChildId(null);
+      setIsParentUnlocked(false);
+      return;
+    }
+    supabase.from('profiles').select('*').eq('id', session.user.id).single().then(({ data, error }) => {
+      if (error) { console.warn('Failed to fetch profile:', error.message); return; }
+      if (data) {
+        setProfile(rowToProfile(data));
+        setLanguageState((data.language as Language) ?? 'en');
+      }
+    });
+    setChildrenLoading(true);
+    supabase.from('children').select('*').eq('parent_id', session.user.id).order('created_at').then(({ data, error }) => {
+      setChildrenLoading(false);
+      if (error) { console.warn('Failed to fetch children:', error.message); return; }
+      setChildProfiles((data ?? []).map(rowToChild));
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [session?.user.id]);
+
+  const signUp = async (email: string, password: string, name: string): Promise<AuthResult> => {
+    const { error } = await supabase.auth.signUp({ email, password, options: { data: { name } } });
+    return { error: error?.message ?? null };
+  };
+
+  const signIn = async (email: string, password: string): Promise<AuthResult> => {
+    const { error } = await supabase.auth.signInWithPassword({ email, password });
+    return { error: error?.message ?? null };
+  };
+
+  const signOut = async () => {
+    await supabase.auth.signOut();
+  };
+
+  const resetPasswordForEmail = async (email: string): Promise<AuthResult> => {
+    const { error } = await supabase.auth.resetPasswordForEmail(email);
+    return { error: error?.message ?? null };
+  };
+
+  // Re-checks the account password — used to verify identity before letting
+  // someone set a new dashboard PIN if they've forgotten the old one.
+  const reauthenticate = async (password: string): Promise<AuthResult> => {
+    if (!session?.user.email) return { error: 'No signed-in account' };
+    const { error } = await supabase.auth.signInWithPassword({ email: session.user.email, password });
+    return { error: error?.message ?? null };
+  };
+
+  const setProfilePin = async (pin: string | null) => {
+    if (!session) return;
+    setProfile(prev => (prev ? { ...prev, pin } : prev));
+    const { error } = await supabase.from('profiles').update({ pin }).eq('id', session.user.id);
+    if (error) console.warn('Failed to save PIN:', error.message);
+  };
+
+  const updateProfile = async (updates: Partial<Pick<ParentProfile, 'name' | 'color' | 'avatar'>>) => {
+    if (!session) return;
+    setProfile(prev => (prev ? { ...prev, ...updates } : prev));
+    const { error } = await supabase.from('profiles').update(updates).eq('id', session.user.id);
+    if (error) console.warn('Failed to update profile:', error.message);
+  };
+
+  const unlockParent = () => setIsParentUnlocked(true);
+  const lockParent = () => setIsParentUnlocked(false);
+
+  const setLanguage = (l: Language) => {
+    setLanguageState(l);
+    if (session) {
+      supabase.from('profiles').update({ language: l }).eq('id', session.user.id).then(({ error }) => {
+        if (error) console.warn('Failed to save language:', error.message);
+      });
+    }
+  };
 
   // ── Child profiles ───────────────────────────────────────────────────────
   const [childProfiles, setChildProfiles] = useState<ChildProfile[]>([]);
+  const [childrenLoading, setChildrenLoading] = useState(false);
   const [activeChildId, setActiveChildId] = useState<string | null>(null);
   const activeChild = childProfiles.find(c => c.id === activeChildId) ?? null;
 
-  const updateActiveChild = (updater: (c: ChildProfile) => ChildProfile) => {
-    if (!activeChildId) return;
-    setChildProfiles(prev => prev.map(c => (c.id === activeChildId ? updater(c) : c)));
+  // Applies a change locally right away (so the UI stays instant) and pushes
+  // the same change to Supabase in the background.
+  const applyChildUpdate = (id: string, updater: (c: ChildProfile) => ChildProfile) => {
+    setChildProfiles(prev => prev.map(c => {
+      if (c.id !== id) return c;
+      const next = updater(c);
+      supabase.from('children').update(childToRow(next)).eq('id', id).then(({ error }) => {
+        if (error) console.warn('Failed to sync child', id, error.message);
+      });
+      return next;
+    }));
   };
 
-  const addChildProfile = (name: string, species: string, bodyColor: string, eyes: string, ageGroup: StoryAgeGroup) => {
-    const id = genId();
-    setChildProfiles(prev => [...prev, makeChildProfile(id, name, species, bodyColor, eyes, ageGroup)]);
-    setActiveChildId(id);
-    return id;
+  const updateActiveChild = (updater: (c: ChildProfile) => ChildProfile) => {
+    if (!activeChildId) return;
+    applyChildUpdate(activeChildId, updater);
+  };
+
+  const addChildProfile = async (name: string, species: string, bodyColor: string, eyes: string, ageGroup: StoryAgeGroup) => {
+    if (!session) return;
+    const { data, error } = await supabase.from('children').insert({
+      parent_id: session.user.id,
+      name: name.trim() || 'Explorer',
+      age_group: ageGroup,
+      genetics: { bodyColor, eyes, hair: 'None', species },
+      equipped: DEFAULT_EQUIPPED,
+      owned_items: STARTER_BACKGROUNDS,
+    }).select().single();
+    if (error || !data) { console.warn('Failed to create child:', error?.message); return; }
+    const child = rowToChild(data);
+    setChildProfiles(prev => [...prev, child]);
+    setActiveChildId(child.id);
   };
 
   const switchChild = (id: string) => setActiveChildId(id);
 
   const renameChildProfile = (id: string, name: string) => {
-    setChildProfiles(prev => prev.map(c => (c.id === id ? { ...c, name: name.trim() || c.name } : c)));
+    applyChildUpdate(id, c => ({ ...c, name: name.trim() || c.name }));
   };
 
   const deleteChildProfile = (id: string) => {
     setChildProfiles(prev => prev.filter(c => c.id !== id));
-    setParentProfiles(prev => prev.map(p => ({ ...p, childIds: p.childIds.filter(cid => cid !== id) })));
     if (activeChildId === id) setActiveChildId(null);
+    supabase.from('children').delete().eq('id', id).then(({ error }) => {
+      if (error) console.warn('Failed to delete child', id, error.message);
+    });
   };
 
   // Active-child derived values, exposed flat so existing screens don't need to change
@@ -266,78 +424,6 @@ export function ZenZooProvider({ children }: { children: React.ReactNode }) {
     });
   };
 
-  // ── Parent Dashboard — auth (multiple parent profiles) ─────────────────────
-  const [parentProfiles, setParentProfiles] = useState<ParentProfile[]>([]);
-  const [activeParentId, setActiveParentId] = useState<string | null>(null);
-  const [isParentUnlocked, setIsParentUnlocked] = useState(false);
-
-  const addParentProfile = (name: string, pin: string, color: string, avatar: string, question: string, answer: string, childIds: string[]) => {
-    const id = genId();
-    const profile: ParentProfile = {
-      id,
-      name: name.trim() || 'Parent',
-      pin,
-      color,
-      avatar,
-      securityQuestion: question,
-      securityAnswer: answer.trim().toLowerCase(),
-      failedAttempts: 0,
-      lockedUntil: null,
-      childIds,
-    };
-    setParentProfiles(prev => [...prev, profile]);
-    return id;
-  };
-
-  const updateParentProfile = (id: string, updates: Partial<Pick<ParentProfile, 'name' | 'color' | 'avatar' | 'childIds'>>) => {
-    setParentProfiles(prev => prev.map(p => (p.id === id
-      ? { ...p, ...updates, name: updates.name !== undefined ? (updates.name.trim() || p.name) : p.name }
-      : p)));
-  };
-
-  const deleteParentProfile = (id: string) => {
-    setParentProfiles(prev => prev.filter(p => p.id !== id));
-    if (activeParentId === id) {
-      setActiveParentId(null);
-      setIsParentUnlocked(false);
-    }
-  };
-
-  const setProfilePin = (id: string, pin: string) => {
-    setParentProfiles(prev => prev.map(p => (p.id === id ? { ...p, pin } : p)));
-  };
-
-  const setProfileSecurity = (id: string, question: string, answer: string) => {
-    setParentProfiles(prev => prev.map(p => (p.id === id
-      ? { ...p, securityQuestion: question, securityAnswer: answer.trim().toLowerCase() }
-      : p)));
-  };
-
-  const verifyProfileSecurityAnswer = (id: string, answer: string) => {
-    const p = parentProfiles.find(pr => pr.id === id);
-    return !!p && p.securityAnswer !== null && answer.trim().toLowerCase() === p.securityAnswer;
-  };
-
-  // Escalating lockout after repeated wrong PIN entries: 30s, 60s, 120s, 300s.
-  const LOCKOUT_TIERS_SEC = [30, 60, 120, 300];
-  const registerProfileFailedAttempt = (id: string) => {
-    setParentProfiles(prev => prev.map(p => {
-      if (p.id !== id) return p;
-      const next = p.failedAttempts + 1;
-      const lockedUntil = next >= 3
-        ? Date.now() + LOCKOUT_TIERS_SEC[Math.min(next - 3, LOCKOUT_TIERS_SEC.length - 1)] * 1000
-        : p.lockedUntil;
-      return { ...p, failedAttempts: next, lockedUntil };
-    }));
-  };
-
-  const unlockParent = (id: string) => {
-    setActiveParentId(id);
-    setIsParentUnlocked(true);
-    setParentProfiles(prev => prev.map(p => (p.id === id ? { ...p, failedAttempts: 0, lockedUntil: null } : p)));
-  };
-  const lockParent = () => { setIsParentUnlocked(false); setActiveParentId(null); };
-
   // ── Parent Dashboard — stats (active child) ─────────────────────────────────
   const addFocusMinutes = (n: number) => updateActiveChild(c => ({
     ...c, focusMinutes: c.focusMinutes + n, focusSessionsCompleted: c.focusSessionsCompleted + 1,
@@ -348,25 +434,25 @@ export function ZenZooProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     if (!activeChildId) return;
     const id = setInterval(() => {
-      setChildProfiles(prev => prev.map(c => (c.id === activeChildId ? { ...c, screenTimeMinutes: c.screenTimeMinutes + 1 } : c)));
+      updateActiveChild(c => ({ ...c, screenTimeMinutes: c.screenTimeMinutes + 1 }));
     }, 60000);
     return () => clearInterval(id);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [activeChildId]);
 
   useEffect(() => {
     if (!activeChildId) return;
-    setChildProfiles(prev => prev.map(c => (c.id === activeChildId ? { ...c, longestStreak: Math.max(c.longestStreak, c.streak) } : c)));
+    if (streak > longestStreak) {
+      updateActiveChild(c => ({ ...c, longestStreak: Math.max(c.longestStreak, c.streak) }));
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [streak, activeChildId]);
 
   // ── Parent Dashboard — controls targeted at a specific (possibly non-active) child ──
-  const updateChild = (id: string, updater: (c: ChildProfile) => ChildProfile) => {
-    setChildProfiles(prev => prev.map(c => (c.id === id ? updater(c) : c)));
-  };
-  const setChildShopLocked = (id: string, locked: boolean) => updateChild(id, c => ({ ...c, shopLocked: locked }));
-  const setChildDailyLimitMinutes = (id: string, n: number | null) => updateChild(id, c => ({ ...c, dailyLimitMinutes: n }));
-  const setChildBedtimeHour = (id: string, n: number | null) => updateChild(id, c => ({ ...c, bedtimeHour: n }));
-  const resetChildScreenTime = (id: string) => updateChild(id, c => ({ ...c, screenTimeMinutes: 0 }));
+  const setChildShopLocked = (id: string, locked: boolean) => applyChildUpdate(id, c => ({ ...c, shopLocked: locked }));
+  const setChildDailyLimitMinutes = (id: string, n: number | null) => applyChildUpdate(id, c => ({ ...c, dailyLimitMinutes: n }));
+  const setChildBedtimeHour = (id: string, n: number | null) => applyChildUpdate(id, c => ({ ...c, bedtimeHour: n }));
+  const resetChildScreenTime = (id: string) => applyChildUpdate(id, c => ({ ...c, screenTimeMinutes: 0 }));
 
   // ── Admin (targets the active child) ────────────────────────────────────────
   const adminSetCoins  = (n: number) => updateActiveChild(c => ({ ...c, calmCoins: Math.max(0, n) }));
@@ -376,7 +462,7 @@ export function ZenZooProvider({ children }: { children: React.ReactNode }) {
     ...c,
     calmCoins: 0,
     streak: 1,
-    ownedItems: ['bg_meadow'],
+    ownedItems: STARTER_BACKGROUNDS,
     equipped: { ...DEFAULT_EQUIPPED },
     genetics: { ...DEFAULT_GENETICS },
   }));
@@ -384,12 +470,11 @@ export function ZenZooProvider({ children }: { children: React.ReactNode }) {
   return (
     <ZenZooContext.Provider
       value={{
+        session, authLoading, profile, signUp, signIn, signOut, resetPasswordForEmail, reauthenticate,
+        setProfilePin, updateProfile, isParentUnlocked, unlockParent, lockParent,
         ageGroup, genetics, equipped, ownedItems, calmCoins, level, streak, updateGenetic, equipItem, buyItem, awardCoins,
-        isDark, toggleDark, language, setLanguage, t, journalEntries, addJournalEntry, moodEntries, addMoodEntry,
-        childProfiles, activeChildId, addChildProfile, switchChild, renameChildProfile, deleteChildProfile,
-        parentProfiles, activeParentId, isParentUnlocked, unlockParent, lockParent,
-        addParentProfile, updateParentProfile, deleteParentProfile,
-        setProfilePin, setProfileSecurity, verifyProfileSecurityAnswer, registerProfileFailedAttempt,
+        isDark, toggleDark, language: languageState, setLanguage, t, journalEntries, addJournalEntry, moodEntries, addMoodEntry,
+        childProfiles, childrenLoading, activeChildId, addChildProfile, switchChild, renameChildProfile, deleteChildProfile,
         screenTimeMinutes, focusMinutes, focusSessionsCompleted, addFocusMinutes,
         breathingSessions, addBreathingSession, totalCoinsEarned, longestStreak,
         shopLocked, dailyLimitMinutes, bedtimeHour,

@@ -101,7 +101,7 @@ export default function PetCircle({ species, bodyColor, accentColor, muzzleColor
             hair={hair}
             hat={hatStyleFromId(hatId)}
             outfit={outfitStyleFromId(outfitId)}
-            size={134}
+            size={170}
           />
         </Animated.View>
       </Animated.View>
