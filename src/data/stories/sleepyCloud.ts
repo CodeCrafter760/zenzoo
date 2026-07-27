@@ -8,7 +8,7 @@ const sleepyCloud: StoryItem = {
   color: '#5BB8E4',
   bg: '#EAF6FD',
   anim: 'sleepy-cloud',
-  audio: null,
+  audio: require('../../../assets/Stories_audio/the_sleepy_cloud.m4a'),
   genre: 'Sleep',
   ageGroup: 'Preschool (4-6)',
   content: `Close your eyes and imagine you are floating up, up, up into the soft blue sky. You can see fluffy white clouds all around you. One little cloud waves at you — its name is Nimbus, the Sleepy Cloud.

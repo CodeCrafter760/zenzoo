@@ -1,9 +1,10 @@
 import React, { useState } from 'react';
 import {
   View, Text, StyleSheet, SafeAreaView, ScrollView,
-  TouchableOpacity, TextInput, Alert,
+  TouchableOpacity, TextInput,
 } from 'react-native';
 import { useZenZoo, shopCatalog, COINS_PER_LEVEL } from '../context/ZenZooContext';
+import { showConfirm } from '../utils/alert';
 
 const A = {
   bg:      '#0A0818',
@@ -67,7 +68,7 @@ export default function AdminScreen() {
   };
 
   const handleReset = () => {
-    Alert.alert(
+    showConfirm(
       'Reset everything?',
       'This will wipe all coins, items, and progress.',
       [

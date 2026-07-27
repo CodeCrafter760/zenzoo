@@ -57,8 +57,8 @@ create table if not exists public.children (
   name text not null,
   age_group text not null default 'Preschool (4-6)',
   genetics jsonb not null default '{"bodyColor":"#FFD3B6","eyes":"Wonder","hair":"None","species":"Bear"}',
-  equipped jsonb not null default '{"Backgrounds":"bg_meadow","Hats":null,"Outfits":null}',
-  owned_items jsonb not null default '["bg_meadow"]',
+  equipped jsonb not null default '{"Backgrounds":"bg_sky_blue","Hats":null,"Outfits":null}',
+  owned_items jsonb not null default '["bg_sky_blue","bg_sunny_yellow"]',
   calm_coins integer not null default 0,
   streak integer not null default 1,
   journal_entries jsonb not null default '[]',
@@ -72,9 +72,23 @@ create table if not exists public.children (
   shop_locked boolean not null default false,
   daily_limit_minutes integer,
   bedtime_hour integer,
+  -- Gentle streaks & badges
+  last_check_in_date text,
+  total_check_ins integer not null default 0,
+  stories_finished integer not null default 0,
+  unlocked_badges jsonb not null default '[]',
+  claimed_streak_rewards jsonb not null default '[]',
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now()
 );
+
+-- Adds the streaks/badges columns to a `children` table created before this feature
+-- existed. Safe to re-run — `add column if not exists` is a no-op once applied.
+alter table public.children add column if not exists last_check_in_date text;
+alter table public.children add column if not exists total_check_ins integer not null default 0;
+alter table public.children add column if not exists stories_finished integer not null default 0;
+alter table public.children add column if not exists unlocked_badges jsonb not null default '[]';
+alter table public.children add column if not exists claimed_streak_rewards jsonb not null default '[]';
 
 alter table public.children enable row level security;
 

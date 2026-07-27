@@ -191,7 +191,7 @@ Y así, bajo la canción vigilante y somnolienta del Abuelo Búho, todo el bosqu
     anim: 'tummy-boat',
     audio: null,
     genre: 'Sleep',
-    ageGroup: 'Big Kid (6-9)',
+    ageGroup: 'Pre-Teen (6-9)',
     content: `Out on the wide, blue sea, a small sailboat named Pip had been sailing all day long. Its little white sail had caught the wind since early morning, carrying it past rocky islands, through schools of silver fish, and around a family of curious dolphins who liked to leap alongside it.
 
 It had been an exciting day full of adventure. But now, as the sun began to sink low over the water, painting the waves in shades of gold and rose, Pip the sailboat felt something new: a soft, sleepy tiredness settling into its wooden hull.
@@ -383,7 +383,7 @@ Y ahí, en la acogedora madriguera bajo las raíces del arce, Luna la zorra durm
     anim: 'starry-quilt',
     audio: null,
     genre: 'Sleep',
-    ageGroup: 'Big Kid (6-9)',
+    ageGroup: 'Pre-Teen (6-9)',
     content: `In a cozy bedroom at the end of a long, tiring day, two sisters named Maya and Rosie had built the greatest blanket fort the world had ever seen. Well — that's what it felt like, anyway. Pillows formed the walls. A big quilted blanket stretched overhead like a soft, colorful sky. A string of tiny fairy lights twinkled along the top like stars.
 
 "This is the best fort ever," Rosie said, the younger of the two, snuggling into a pile of cushions.
@@ -567,7 +567,7 @@ Y mientras Susurro se queda dormida entre las hojas del sauce, todo el mundo que
     anim: 'wiggle-worm',
     audio: null,
     genre: 'Sleep',
-    ageGroup: 'Big Kid (6-9)',
+    ageGroup: 'Pre-Teen (6-9)',
     content: `High on a quiet mountainside, tucked behind a curtain of pine trees, there was a cave that belonged to a bear family. The cave was lined with soft dry leaves and moss, and it smelled like cedar and warm earth. This was where Barnaby, a small brown bear cub, lived with his mother.
 
 Outside, the first snow of the season had begun to fall — soft, quiet flakes drifting down from a grey evening sky, settling onto the pine branches like powdered sugar.
@@ -871,7 +871,7 @@ Y ahí en la hoja suave, rodeada del suave murmullo de una pradera que descansab
     anim: 'starry-quilt',
     audio: null,
     genre: 'Sleep',
-    ageGroup: 'Big Kid (6-9)',
+    ageGroup: 'Pre-Teen (6-9)',
     content: `In a cottage at the edge of a quiet village, there lived a grandmother who was famous for one very special thing: she could stitch quilts out of starlight. Every evening, as the sky began to darken, she would sit by her window with a basket of soft, glowing thread, gathered from the light of the very first stars to appear.
 
 Tonight, her grandson, a boy named Theo, was staying over, and he watched with wide eyes as she began to work. "How do you catch starlight in a basket?" he asked.

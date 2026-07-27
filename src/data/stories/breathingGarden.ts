@@ -8,7 +8,7 @@ const breathingGarden: StoryItem = {
   color: '#FF85A2',
   bg: '#FFF0F5',
   anim: 'breathing-garden',
-  audio: null,
+  audio: require('../../../assets/Stories_audio/the_breathing_garden.m4a'),
   genre: 'Breathing',
   ageGroup: 'Toddler (2-4)',
   content: `Imagine you are walking through a magical garden. The air is warm and smells of flowers. Everywhere you look, there are beautiful blooms in every colour you can imagine.

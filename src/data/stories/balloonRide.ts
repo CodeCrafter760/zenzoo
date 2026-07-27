@@ -10,7 +10,7 @@ const balloonRide: StoryItem = {
   anim: 'balloon-ride',
   audio: null,
   genre: 'Anxiety',
-  ageGroup: 'Big Kid (6-9)',
+  ageGroup: 'Pre-Teen (6-9)',
   content: `Imagine a big, beautiful hot air balloon floating just above you, its basket resting gently at your feet.
 
 Think of a big feeling you have today — maybe it's mad, or worried, or frustrated. Picture it as a small, soft cloud, dark and a little heavy. Gently place that feeling-cloud into the basket.

@@ -17,4 +17,7 @@ export const OUTFITS: ShopItem[] = [
   { id: 'outfit_sporty',    name: 'Sporty Jersey',   cost: 30,  category: 'Outfits' },
   { id: 'outfit_pajama',    name: 'Cozy Pajamas',    cost: 25,  category: 'Outfits' },
   { id: 'outfit_flower',    name: 'Flower Dress',    cost: 50,  category: 'Outfits' },
+
+  // Earned only — granted by the 14-day streak reward, never purchasable.
+  { id: 'outfit_champion',  name: 'Champion Cape',   cost: 0,   category: 'Outfits', exclusive: true },
 ];

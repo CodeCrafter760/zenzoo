@@ -42,4 +42,7 @@ export const BACKGROUNDS: ShopItem[] = [
 
   // Legendary
   { id: 'bg_diamond_sparkle',name: 'Diamond Sparkle',  cost: 150, category: 'Backgrounds', type: '#B3E5FC', rarity: 'Legendary' },
+
+  // Earned only — granted by the 30-day streak reward, never purchasable.
+  { id: 'bg_streak_gold',    name: 'Streak Gold',      cost: 0,   category: 'Backgrounds', type: '#FFD700', exclusive: true },
 ];

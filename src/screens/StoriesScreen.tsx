@@ -16,18 +16,18 @@ type Section = 'Affirmations' | 'Massages' | 'Stories';
 // ── Affirmations ──────────────────────────────────────────────────────────────
 
 const AFFIRMATIONS: AffirmationItem[] = [
-  { text: 'I am brave and strong',           emoji: '🦁', color: '#FF8267', bg: '#FFF0EC', anim: 'pulse-ring',    es: 'Soy valiente y fuerte' },
-  { text: 'I am loved exactly as I am',      emoji: '💛', color: '#FFB830', bg: '#FFF8E0', anim: 'float-hearts',  es: 'Me quieren tal como soy' },
-  { text: 'I can do hard things',            emoji: '💪', color: '#7C6EF0', bg: '#F0EDFF', anim: 'rise-up',       es: 'Puedo hacer cosas difíciles' },
-  { text: 'I am kind and caring',            emoji: '🌸', color: '#FF85A2', bg: '#FFF0F5', anim: 'spin-petals',   es: 'Soy amable y cariñoso' },
-  { text: 'Every day I am growing',          emoji: '🌱', color: '#3DD6C0', bg: '#E0FAF5', anim: 'grow-plant',    es: 'Cada día estoy creciendo' },
-  { text: 'My feelings are valid',           emoji: '💜', color: '#A88FF0', bg: '#F2EDFF', anim: 'wave',          es: 'Mis sentimientos son válidos' },
-  { text: 'I am enough just as I am',        emoji: '⭐', color: '#FFB830', bg: '#FFF8E0', anim: 'star-burst',    es: 'Soy suficiente tal como soy' },
-  { text: 'I choose joy today',              emoji: '🌈', color: '#5BB8E4', bg: '#EAF6FD', anim: 'rainbow',       es: 'Hoy elijo la alegría' },
-  { text: 'I am a wonderful friend',         emoji: '🤝', color: '#3DD6C0', bg: '#E0FAF5', anim: 'come-together', es: 'Soy un amigo maravilloso' },
-  { text: 'My dreams are worth chasing',     emoji: '🌙', color: '#6366F1', bg: '#EDE9FF', anim: 'float-dream',   es: 'Mis sueños valen la pena' },
-  { text: 'I believe in myself',             emoji: '🌟', color: '#FFB830', bg: '#FFF8E0', anim: 'expand-rings',  es: 'Creo en mí' },
-  { text: 'I am creative and full of ideas', emoji: '🎨', color: '#FF8267', bg: '#FFF0EC', anim: 'color-dots',    es: 'Tengo mucha creatividad y muchas ideas' },
+  { text: 'I am brave and strong',           emoji: '🦁', color: '#FF8267', bg: '#FFF0EC', anim: 'pulse-ring',    es: 'Soy valiente y fuerte', audio: require('../../assets/Affirmation_audio/i_am_brave_and_strong.m4a') },
+  { text: 'I am loved exactly as I am',      emoji: '💛', color: '#FFB830', bg: '#FFF8E0', anim: 'float-hearts',  es: 'Me quieren tal como soy', audio: require('../../assets/Affirmation_audio/i_am_loved_exactly_as_i_am.m4a') },
+  { text: 'I can do hard things',            emoji: '💪', color: '#7C6EF0', bg: '#F0EDFF', anim: 'rise-up',       es: 'Puedo hacer cosas difíciles', audio: require('../../assets/Affirmation_audio/i_can_do_hard_things.m4a') },
+  { text: 'I am kind and caring',            emoji: '🌸', color: '#FF85A2', bg: '#FFF0F5', anim: 'spin-petals',   es: 'Soy amable y cariñoso', audio: require('../../assets/Affirmation_audio/i_am_kind_and_caring.m4a') },
+  { text: 'Every day I am growing',          emoji: '🌱', color: '#3DD6C0', bg: '#E0FAF5', anim: 'grow-plant',    es: 'Cada día estoy creciendo', audio: require('../../assets/Affirmation_audio/every_day_i_am_growing.m4a') },
+  { text: 'My feelings are valid',           emoji: '💜', color: '#A88FF0', bg: '#F2EDFF', anim: 'wave',          es: 'Mis sentimientos son válidos', audio: require('../../assets/Affirmation_audio/my_feelings_are_valid.m4a') },
+  { text: 'I am enough just as I am',        emoji: '⭐', color: '#FFB830', bg: '#FFF8E0', anim: 'star-burst',    es: 'Soy suficiente tal como soy', audio: require('../../assets/Affirmation_audio/i_am_just_enough_as_i_am.m4a') },
+  { text: 'I choose joy today',              emoji: '🌈', color: '#5BB8E4', bg: '#EAF6FD', anim: 'rainbow',       es: 'Hoy elijo la alegría', audio: require('../../assets/Affirmation_audio/i_chose_joy_today.m4a') },
+  { text: 'I am a wonderful friend',         emoji: '🤝', color: '#3DD6C0', bg: '#E0FAF5', anim: 'come-together', es: 'Soy un amigo maravilloso', audio: require('../../assets/Affirmation_audio/i_am_a_wonderful_friend.m4a') },
+  { text: 'My dreams are worth chasing',     emoji: '🌙', color: '#6366F1', bg: '#EDE9FF', anim: 'float-dream',   es: 'Mis sueños valen la pena', audio: require('../../assets/Affirmation_audio/my_dreams_are_worth_chasing.m4a') },
+  { text: 'I believe in myself',             emoji: '🌟', color: '#FFB830', bg: '#FFF8E0', anim: 'expand-rings',  es: 'Creo en mí', audio: require('../../assets/Affirmation_audio/i_believe_in_myself.m4a') },
+  { text: 'I am creative and full of ideas', emoji: '🎨', color: '#FF8267', bg: '#FFF0EC', anim: 'color-dots',    es: 'Tengo mucha creatividad y muchas ideas', audio: require('../../assets/Affirmation_audio/i_am_creative_and_full_of_ideas.m4a') },
 ];
 
 // ── Massage routines ──────────────────────────────────────────────────────────
@@ -539,7 +539,7 @@ const GENRE_EMOJI: Record<StoryGenre, string> = {
   Sleep: '🌙', Breathing: '🌬️', Focus: '🎯', Anxiety: '🎈', Kindness: '💗', Confidence: '⭐', Emotions: '🌲',
 };
 const AGE_EMOJI: Record<StoryAgeGroup, string> = {
-  'Toddler (2-4)': '🍼', 'Preschool (4-6)': '🧒', 'Big Kid (6-9)': '🧑',
+  'Toddler (2-4)': '🍼', 'Preschool (4-6)': '🧒', 'Pre-Teen (6-9)': '🧑',
 };
 
 type GenreFilter = StoryGenre | 'All';

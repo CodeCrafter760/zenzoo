@@ -7,7 +7,8 @@ import { useAudioPlayer, useAudioPlayerStatus } from 'expo-audio';
 import { useZenZoo } from '../context/ZenZooContext';
 import { LIGHT_THEME, DARK_THEME } from '../theme/theme';
 import { Feather } from '@expo/vector-icons';
-import { tapHaptic } from '../utils/haptics';
+import { tapHaptic, successHaptic } from '../utils/haptics';
+import { showAlert } from '../utils/alert';
 import { StoryAnimType, StoryItem } from '../data/stories/types';
 
 export type { StoryAnimType, StoryItem };
@@ -983,6 +984,17 @@ function formatTime(sec: number) {
   return `${m}:${s.toString().padStart(2, '0')}`;
 }
 
+// Longer stories pay out more — 5 Calm Coins per minute of readTime (e.g. "6 min" → 30 coins).
+// Falls back to a flat 10 if readTime doesn't parse as "<number> min".
+function coinsForStory(readTime: string): number {
+  const minutes = parseInt(readTime, 10);
+  return isFinite(minutes) && minutes > 0 ? minutes * 5 : 10;
+}
+
+// A minimum dwell time before a story with no narration audio counts as "finished" —
+// just enough to stop the reward from being farmed by opening and instantly closing.
+const MIN_READ_DWELL_MS = 15000;
+
 // ── Player ────────────────────────────────────────────────────────────────────
 
 interface Props {
@@ -991,7 +1003,7 @@ interface Props {
 }
 
 export default function StoryPlayer({ story, onClose }: Props) {
-  const { isDark, ageGroup, language, t } = useZenZoo();
+  const { isDark, ageGroup, language, t, finishStory } = useZenZoo();
   const T = isDark ? DARK_THEME : LIGHT_THEME;
   const [showLyrics, setShowLyrics] = useState(false);
   // Toddlers can't read yet, so there's no point offering a lyrics view.
@@ -1002,9 +1014,32 @@ export default function StoryPlayer({ story, onClose }: Props) {
   const status = useAudioPlayerStatus(player);
   const hasAudio = story.audio !== null;
 
+  const mountTimeRef = useRef(Date.now());
+  const awardedRef = useRef(false);
+  const storyCoins = coinsForStory(tr?.readTime ?? story.readTime);
+
+  const awardIfEarned = () => {
+    if (awardedRef.current) return;
+    awardedRef.current = true;
+    finishStory(storyCoins);
+    successHaptic();
+    showAlert(t('📖 Story finished!'), t('You earned {n} Calm Coins!').replace('{n}', String(storyCoins)));
+  };
+
   useEffect(() => {
     if (hasAudio) player.play();
   }, []);
+
+  // Narrated stories pay out the moment the audio finishes; text-only stories pay out
+  // when the child backs out after reading for at least MIN_READ_DWELL_MS.
+  useEffect(() => {
+    if (hasAudio && status.didJustFinish) awardIfEarned();
+  }, [status.didJustFinish]);
+
+  const handleClose = () => {
+    if (!hasAudio && Date.now() - mountTimeRef.current >= MIN_READ_DWELL_MS) awardIfEarned();
+    onClose();
+  };
 
   const togglePlay = () => {
     tapHaptic();
@@ -1024,7 +1059,7 @@ export default function StoryPlayer({ story, onClose }: Props) {
 
       {/* ── Top bar ── */}
       <View style={S.topBar}>
-        <TouchableOpacity onPress={onClose} style={S.backBtn} activeOpacity={0.7}>
+        <TouchableOpacity onPress={handleClose} style={S.backBtn} activeOpacity={0.7}>
           <Text style={[S.backText, { color: story.color }]}>← {t('Back')}</Text>
         </TouchableOpacity>
         <Text style={[S.topTitle, { color: T.text }]} numberOfLines={1}>

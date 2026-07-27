@@ -18,9 +18,9 @@ export default function MoodSurveyScreen({ onNavigate }: { onNavigate?: (s: stri
   const { isDark, moodEntries, addMoodEntry, awardCoins, ageGroup, language, t } = useZenZoo();
   const T = isDark ? DARK_THEME : LIGHT_THEME;
   // Tags require reading, the note requires writing — both scale with age.
-  // Toddler: mood only. Preschool: mood + tags. Big Kid: everything.
+  // Toddler: mood only. Preschool: mood + tags. Pre-Teen: everything.
   const isToddler = ageGroup === 'Toddler (2-4)';
-  const isBigKid  = ageGroup === 'Big Kid (6-9)';
+  const isPreTeen  = ageGroup === 'Pre-Teen (6-9)';
 
   const today = new Date().toDateString();
   const todayEntry = moodEntries.find(e => e.date === today);
@@ -119,8 +119,8 @@ export default function MoodSurveyScreen({ onNavigate }: { onNavigate?: (s: stri
             </>
           )}
 
-          {/* ── Note — needs writing, so only Big Kid gets a text field ── */}
-          {isBigKid && (
+          {/* ── Note — needs writing, so only Pre-Teen gets a text field ── */}
+          {isPreTeen && (
             <>
               <Text style={[styles.sectionLabel, { color: T.text }]}>{t('Want to add a note? (optional)')}</Text>
               <View style={[styles.noteCard, { backgroundColor: T.card, borderColor: T.edge }]}>

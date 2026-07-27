@@ -1,11 +1,12 @@
 import React, { useState } from 'react';
 import {
   View, Text, StyleSheet, SafeAreaView, ScrollView, KeyboardAvoidingView,
-  Platform, TouchableOpacity, TextInput, ActivityIndicator, Alert,
+  Platform, TouchableOpacity, TextInput, ActivityIndicator,
 } from 'react-native';
 import { useZenZoo } from '../context/ZenZooContext';
 import { LIGHT_THEME, DARK_THEME, PALETTE, RADIUS, SHADOW } from '../theme/theme';
 import { tapHaptic, successHaptic, errorHaptic } from '../utils/haptics';
+import { showAlert } from '../utils/alert';
 import { Feather } from '@expo/vector-icons';
 
 const ACCENT = PALETTE.indigo;
@@ -13,7 +14,7 @@ const ACCENT = PALETTE.indigo;
 type Mode = 'signIn' | 'signUp';
 
 export default function AuthScreen() {
-  const { signUp, signIn, resetPasswordForEmail, isDark, t } = useZenZoo();
+  const { signUp, signIn, signInWithGoogle, resetPasswordForEmail, isDark, t } = useZenZoo();
   const T = isDark ? DARK_THEME : LIGHT_THEME;
 
   const [mode, setMode] = useState<Mode>('signIn');
@@ -21,6 +22,7 @@ export default function AuthScreen() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
+  const [googleLoading, setGoogleLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [info, setInfo] = useState<string | null>(null);
 
@@ -46,6 +48,22 @@ export default function AuthScreen() {
     }
   };
 
+  const submitGoogle = async () => {
+    if (googleLoading) return;
+    tapHaptic();
+    setGoogleLoading(true);
+    setError(null);
+    setInfo(null);
+    const result = await signInWithGoogle();
+    setGoogleLoading(false);
+    if (result.error) {
+      errorHaptic();
+      setError(result.error);
+      return;
+    }
+    successHaptic();
+  };
+
   const handleForgotPassword = async () => {
     if (email.trim().length < 4) {
       setError(t('Enter your email above first, then tap "Forgot password?"'));
@@ -58,7 +76,7 @@ export default function AuthScreen() {
       setError(result.error);
       return;
     }
-    Alert.alert(t('Check your email'), t("We've sent a link to reset your password."));
+    showAlert(t('Check your email'), t("We've sent a link to reset your password."));
   };
 
   return (
@@ -72,6 +90,28 @@ export default function AuthScreen() {
           <Text style={[styles.subtitle, { color: T.mid }]}>
             {mode === 'signIn' ? t('Sign in to your family account') : t('Create your family account')}
           </Text>
+
+          <TouchableOpacity
+            style={[styles.googleBtn, { backgroundColor: T.card, borderColor: T.edge }]}
+            onPress={submitGoogle}
+            disabled={googleLoading}
+            activeOpacity={0.85}
+          >
+            {googleLoading ? (
+              <ActivityIndicator color={ACCENT} />
+            ) : (
+              <>
+                <Text style={styles.googleG}>G</Text>
+                <Text style={[styles.googleBtnText, { color: T.text }]}>{t('Continue with Google')}</Text>
+              </>
+            )}
+          </TouchableOpacity>
+
+          <View style={styles.dividerRow}>
+            <View style={[styles.dividerLine, { backgroundColor: T.edge }]} />
+            <Text style={[styles.dividerText, { color: T.soft }]}>{t('or')}</Text>
+            <View style={[styles.dividerLine, { backgroundColor: T.edge }]} />
+          </View>
 
           {mode === 'signUp' && (
             <TextInput
@@ -151,6 +191,17 @@ const styles = StyleSheet.create({
   heroCircle: { width: 68, height: 68, borderRadius: 34, justifyContent: 'center', alignItems: 'center', marginBottom: 16 },
   title:    { fontSize: 30, fontWeight: '900', letterSpacing: -0.4, marginBottom: 6 },
   subtitle: { fontSize: 14, fontWeight: '600', textAlign: 'center', marginBottom: 28 },
+
+  googleBtn: {
+    width: '100%', flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 10,
+    borderRadius: RADIUS.lg, borderWidth: 1.5, paddingVertical: 14, marginBottom: 18, minHeight: 52,
+  },
+  googleG: { fontSize: 18, fontWeight: '900', color: '#4285F4' },
+  googleBtnText: { fontSize: 14.5, fontWeight: '800' },
+
+  dividerRow: { flexDirection: 'row', alignItems: 'center', width: '100%', marginBottom: 18, gap: 10 },
+  dividerLine: { flex: 1, height: 1 },
+  dividerText: { fontSize: 12, fontWeight: '700' },
 
   input: { width: '100%', borderRadius: RADIUS.md, borderWidth: 1.5, paddingVertical: 14, paddingHorizontal: 16, fontSize: 14, fontWeight: '600', marginBottom: 10 },
   hint:  { fontSize: 11.5, fontWeight: '600', alignSelf: 'flex-start', marginTop: -4, marginBottom: 8 },

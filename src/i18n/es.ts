@@ -70,7 +70,7 @@ const ES: Record<string, string> = {
   // Age groups (also used by ChildProfileScreen's age picker)
   'Toddler (2-4)': 'Pequeños (2-4)',
   'Preschool (4-6)': 'Preescolar (4-6)',
-  'Big Kid (6-9)': 'Niños Grandes (6-9)',
+  'Pre-Teen (6-9)': 'Preadolescente (6-9)',
 
   // ── MassagePlayer ──
   '❤️  Chest': '❤️  Pecho',
@@ -93,6 +93,8 @@ const ES: Record<string, string> = {
   'View lyrics': 'Ver el texto',
   '🎵 Narration audio coming soon — read along with the lyrics for now':
     '🎵 Narración de audio próximamente — por ahora, lee el texto',
+  '📖 Story finished!': '📖 ¡Cuento terminado!',
+  'You earned {n} Calm Coins!': '¡Ganaste {n} Monedas Calma!',
 
   // ── MyZenZooScreen ──
   'Species': 'Especies',
@@ -106,6 +108,51 @@ const ES: Record<string, string> = {
   'Wetlands': 'Humedales',
   'Eucalyptus Grove': 'Bosque de Eucaliptos',
   'Meadow': 'Pradera',
+
+  // ── Gentle streaks & badges ──
+  '🌱 Fresh start!': '🌱 ¡Nuevo comienzo!',
+  "Welcome back! Every day is a new chance — you're on Day 1.": '¡Bienvenido de vuelta! Cada día es una nueva oportunidad — estás en el Día 1.',
+  '🌤️ Welcome back!': '🌤️ ¡Bienvenido de vuelta!',
+  'Missing one day is okay — your streak is safe at Day {n}!': 'Faltar un día está bien — tu racha está segura en el Día {n}!',
+  '🔥 Day {n}!': '🔥 ¡Día {n}!',
+  'You checked in {n} days in a row. Keep it up!': 'Te conectaste {n} días seguidos. ¡Sigue así!',
+  'Reward': 'Recompensa',
+  '🏅 Badge Earned!': '🏅 ¡Insignia Obtenida!',
+  'You unlocked "{name}"!': '¡Desbloqueaste "{name}"!',
+  'Badges': 'Insignias',
+  'earned': 'obtenidas',
+  'Your Progress': 'Tu Progreso',
+  'Day {n}': 'Día {n}',
+  'Best streak: {n} days': 'Mejor racha: {n} días',
+  'View Badges & Streak': 'Ver Insignias y Racha',
+  'Streak Flame': 'Llama de Racha',
+  'Champion Cape': 'Capa de Campeón',
+  'Streak Gold': 'Oro de Racha',
+  'First Breath': 'Primer Aliento',
+  'Complete your first breathing session': 'Completa tu primera sesión de respiración',
+  'Breath Master': 'Maestro de la Respiración',
+  'Complete 25 breathing sessions': 'Completa 25 sesiones de respiración',
+  'Focused Mind': 'Mente Enfocada',
+  'Complete 10 focus sessions': 'Completa 10 sesiones de enfoque',
+  'Bookworm': 'Ratón de Biblioteca',
+  'Finish 5 stories': 'Termina 5 cuentos',
+  'Week Streak': 'Racha de una Semana',
+  'Reach a 7-day streak': 'Alcanza una racha de 7 días',
+  'Month Streak': 'Racha de un Mes',
+  'Reach a 30-day streak': 'Alcanza una racha de 30 días',
+  'Century Club': 'Club del Centenario',
+  'Reach a 100-day streak': 'Alcanza una racha de 100 días',
+  'Coin Collector': 'Coleccionista de Monedas',
+  'Earn 200 Calm Coins in total': 'Gana 200 Monedas Calma en total',
+  'Zookeeper': 'Guardián del Zoológico',
+  'Unlock every animal species': 'Desbloquea todas las especies de animales',
+  'Fashionista': 'Fashionista',
+  'Own 10 shop items': 'Ten 10 artículos de la tienda',
+  'Grateful Heart': 'Corazón Agradecido',
+  'Write 5 gratitude journal entries': 'Escribe 5 entradas de gratitud en el diario',
+  'Mood Tracker': 'Rastreador de Ánimo',
+  'Log your mood 7 times': 'Registra tu ánimo 7 veces',
+
   'Meditation Sapling': 'Retoño de Meditación',
   'Breathe to Grow': 'Respira para Crecer',
   'ON': 'SÍ',
@@ -326,6 +373,7 @@ const ES: Record<string, string> = {
   '+10 per cycle': '+10 por ciclo',
   '+10 per session': '+10 por sesión',
   '+5–10 per task': '+5–10 por tarea',
+  '+10–40 per story': '+10–40 por cuento',
 
   // ── ChildProfileScreen ──
   'Big buttons, a simple home screen': 'Botones grandes, una pantalla de inicio simple',
@@ -492,6 +540,8 @@ const ES: Record<string, string> = {
   // ── AuthScreen ──
   'Sign in to your family account': 'Inicia sesión en tu cuenta familiar',
   'Create your family account': 'Crea tu cuenta familiar',
+  'Continue with Google': 'Continuar con Google',
+  'or': 'o',
   'At least 6 characters': 'Al menos 6 caracteres',
   'Account created! Check your email if confirmation is required, then sign in.':
     '¡Cuenta creada! Revisa tu correo si se requiere confirmación, luego inicia sesión.',

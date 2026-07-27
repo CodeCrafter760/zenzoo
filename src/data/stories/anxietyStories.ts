@@ -131,7 +131,7 @@ Reddy mordisqueó felizmente las dulces moras, mirando hacia atrás, hacia la hi
     anim: 'balloon-ride',
     audio: null,
     genre: 'Anxiety',
-    ageGroup: 'Big Kid (6-9)',
+    ageGroup: 'Pre-Teen (6-9)',
     content: `High above a bustling town, a hot air balloon named Marigold waited at the fairground, tethered to the ground with three thick ropes. Inside her basket sat a small worried cloud named Nimble, who had floated down for a ride but was gripping the edge of the basket tightly.
 
 "I'm not sure about this," Nimble said, his wispy edges trembling slightly. "What if we float too high? What if the wind blows us somewhere scary? What if I can never come back down?"
@@ -595,7 +595,7 @@ Waddles jugó felizmente bajo el sol tibio con sus hermanos y hermanas, sintién
     anim: 'balloon-ride',
     audio: null,
     genre: 'Anxiety',
-    ageGroup: 'Big Kid (6-9)',
+    ageGroup: 'Pre-Teen (6-9)',
     content: `Every evening, a boy named Theo lay in bed with his mind buzzing full of worries — about his spelling test, about whether his friends still liked him, about a hundred little things that seemed to multiply the longer he lay there in the dark.
 
 One evening, his grandfather, visiting for the week, noticed Theo tossing and turning. "What's keeping you awake, little one?" he asked, sitting on the edge of the bed.
@@ -967,7 +967,7 @@ Mientras el sol de la tarde se abría paso entre las nubes, bañando el cielo co
     anim: 'stepping-stones',
     audio: null,
     genre: 'Anxiety',
-    ageGroup: 'Big Kid (6-9)',
+    ageGroup: 'Pre-Teen (6-9)',
     content: `High in the mountains, a narrow rope bridge stretched across a deep, rocky canyon, swaying gently in the wind. On one side lived a young mountain goat named Finnegan, and on the other side was a beautiful meadow full of the sweetest mountain flowers he had ever smelled.
 
 "I want to reach that meadow," Finnegan said, peering over the edge of the canyon at the wobbly bridge stretching far below and ahead. "But that bridge looks like it could collapse any moment!"
@@ -1087,7 +1087,7 @@ Finnegan pasó el resto de la tarde paciendo felizmente en el dulce prado de mon
     anim: 'balloon-ride',
     audio: null,
     genre: 'Anxiety',
-    ageGroup: 'Big Kid (6-9)',
+    ageGroup: 'Pre-Teen (6-9)',
     content: `Once a year, in a small village nestled between rolling hills, the townspeople gathered for a very special evening called the Worry Balloon Festival. A young girl named Aiko had heard about it all her life, but this was the first year she was old enough to take part.
 
 "How does it work?" she asked her aunt, who was helping set up rows of small paper lanterns shaped like balloons in the town square.

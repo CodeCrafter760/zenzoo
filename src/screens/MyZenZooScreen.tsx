@@ -1,11 +1,12 @@
-import React, { useState, useRef } from 'react';
-import { StyleSheet, Text, View, ScrollView, TouchableOpacity, Animated, LayoutAnimation, Platform, UIManager, type DimensionValue } from 'react-native';
+import React, { useState, useRef, useEffect } from 'react';
+import { StyleSheet, Text, View, ScrollView, TouchableOpacity, Animated, LayoutAnimation, Platform, UIManager, Modal, type DimensionValue } from 'react-native';
 import { useZenZoo, shopCatalog, COINS_PER_LEVEL } from '../context/ZenZooContext';
 import { LIGHT_THEME, DARK_THEME } from '../theme/theme';
 import { tapHaptic } from '../utils/haptics';
 import { Feather } from '@expo/vector-icons';
 import { SPECIES_LIST } from '../data/species';
 import { BIOMES, type BiomeKey } from '../data/biomes';
+import { BADGES, type BadgeStats } from '../data/badges';
 import PetAvatar, { asEyeStyle, asHairStyle, hatStyleFromId, outfitStyleFromId, HatIcon, OutfitIcon } from '../components/sprites/PetAvatar';
 import PetBackground from '../components/PetBackground';
 import SaplingGraphic, { getSaplingStage } from '../components/SaplingGraphic';
@@ -39,12 +40,28 @@ function useSprings(count: number, pressedScale = 0.94) {
 }
 
 export default function MyZenZooScreen({ onNavigate }: { onNavigate?: (screen: string) => void }) {
-  const { genetics, equipped, ownedItems, level, calmCoins, updateGenetic, equipItem, isDark, ageGroup, language, t } = useZenZoo();
+  const {
+    genetics, equipped, ownedItems, level, calmCoins, updateGenetic, equipItem, isDark, ageGroup, language, t,
+    unlockedBadges, breathingSessions, focusSessionsCompleted, storiesFinished, streak, longestStreak, totalCoinsEarned,
+    journalEntries, moodEntries, activeChildId,
+  } = useZenZoo();
   const T = isDark ? DARK_THEME : LIGHT_THEME;
   const [editorTab, setEditorTab] = useState<'Species' | 'Zoo' | 'Wardrobe' | 'Sprout' | 'Journey'>('Species');
   const [potTheme, setPotTheme] = useState(SPROUT_POTS[0]);
   const [openWardrobeCat, setOpenWardrobeCat] = useState<'Backgrounds' | 'Hats' | 'Outfits' | null>('Backgrounds');
   const [openBiome, setOpenBiome] = useState<BiomeKey | null>(BIOMES[0].key);
+
+  // Each child has their own badges/streak, so the popup re-shows whenever the
+  // active child changes, not just on the screen's first mount.
+  const [showProgressPopup, setShowProgressPopup] = useState(true);
+  useEffect(() => { setShowProgressPopup(true); }, [activeChildId]);
+
+  const badgeStats: BadgeStats = {
+    breathingSessions, focusSessionsCompleted, storiesFinished, longestStreak, totalCoinsEarned, level,
+    ownedItemsCount: ownedItems.length,
+    journalEntriesCount: journalEntries.length,
+    moodEntriesCount: moodEntries.length,
+  };
 
   const toggleWardrobeCat = (cat: 'Backgrounds' | 'Hats' | 'Outfits') => {
     tapHaptic();
@@ -360,11 +377,80 @@ export default function MyZenZooScreen({ onNavigate }: { onNavigate?: (screen: s
                 </View>
               );
             })}
+
+            {/* ── Badges & Streak — full view lives in the popup ── */}
+            <TouchableOpacity
+              style={[styles.badgesReopenCard, { backgroundColor: isDark ? T.card : '#FFFFFF', borderColor: isDark ? T.edge : '#EFEFEF' }]}
+              onPress={() => { tapHaptic(); setShowProgressPopup(true); }}
+              activeOpacity={0.85}
+            >
+              <Text style={{ fontSize: 26 }}>🔥</Text>
+              <View style={{ flex: 1 }}>
+                <Text style={[styles.badgesTitle, { color: isDark ? T.text : '#2D3436' }]}>{t('Badges')}</Text>
+                <Text style={[styles.badgesCount, { color: isDark ? T.mid : '#7F8C8D' }]}>
+                  {unlockedBadges.length}/{BADGES.length} {t('earned')}
+                </Text>
+              </View>
+              <Text style={[styles.badgesReopenLink, { color: isDark ? T.text : '#6C5CE7' }]}>{t('View Badges & Streak')}</Text>
+            </TouchableOpacity>
             <View style={{ height: 20 }} />
           </>
         )}
 
       </ScrollView>
+
+      {/* ── Badges & Streak popup — per active child, shown on entering this screen ── */}
+      <Modal visible={showProgressPopup} transparent animationType="fade" onRequestClose={() => setShowProgressPopup(false)}>
+        <View style={styles.popupBackdrop}>
+          <View style={[styles.popupCard, { backgroundColor: isDark ? T.card : '#FFFFFF' }]}>
+            <Text style={[styles.popupTitle, { color: isDark ? T.text : '#2D3436' }]}>{t('Your Progress')}</Text>
+
+            <View style={[styles.streakRow, { backgroundColor: isDark ? T.bg : '#FFF8E8', borderColor: isDark ? T.edge : '#FFE082' }]}>
+              <Text style={{ fontSize: 32 }}>🔥</Text>
+              <View>
+                <Text style={[styles.streakDay, { color: isDark ? T.text : '#2D3436' }]}>{t('Day {n}').replace('{n}', String(streak))}</Text>
+                <Text style={[styles.streakBest, { color: isDark ? T.mid : '#7F8C8D' }]}>{t('Best streak: {n} days').replace('{n}', String(longestStreak))}</Text>
+              </View>
+            </View>
+
+            <View style={styles.badgesHeader}>
+              <Text style={[styles.badgesTitle, { color: isDark ? T.text : '#2D3436' }]}>{t('Badges')}</Text>
+              <Text style={[styles.badgesCount, { color: isDark ? T.mid : '#7F8C8D' }]}>
+                {unlockedBadges.length}/{BADGES.length} {t('earned')}
+              </Text>
+            </View>
+            <ScrollView contentContainerStyle={styles.speciesGrid} style={styles.popupBadgeScroll}>
+              {BADGES.map(badge => {
+                const earned = unlockedBadges.includes(badge.id) || badge.isEarned(badgeStats);
+                return (
+                  <View
+                    key={badge.id}
+                    style={[styles.speciesCard, { backgroundColor: isDark ? T.bg : '#F8F8F8', borderColor: isDark ? T.edge : '#EFEFEF' }, earned && { backgroundColor: isDark ? T.card : '#FFFFFF' }]}
+                  >
+                    {earned ? (
+                      <Text style={{ fontSize: 28 }}>{badge.emoji}</Text>
+                    ) : (
+                      <Feather name="lock" size={28} color="#B2BEC3" />
+                    )}
+                    <Text style={[styles.speciesName, { color: isDark ? T.text : '#2D3436' }, !earned && styles.lockedText]}>{t(badge.name)}</Text>
+                    {!earned && (
+                      <Text style={[styles.unlockHint, { textAlign: 'center' }]} numberOfLines={2}>{t(badge.description)}</Text>
+                    )}
+                  </View>
+                );
+              })}
+            </ScrollView>
+
+            <TouchableOpacity
+              style={styles.popupCloseBtn}
+              onPress={() => { tapHaptic(); setShowProgressPopup(false); }}
+              activeOpacity={0.85}
+            >
+              <Text style={styles.popupCloseBtnText}>{t('Continue')}</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </Modal>
     </View>
   );
 }
@@ -479,4 +565,30 @@ const styles = StyleSheet.create({
   milestoneRewardReached: { color: '#2D3436' },
   milestoneDetail: { fontSize: 11, color: '#7F8C8D', marginBottom: 2 },
   milestoneXP: { fontSize: 10, color: '#A29BFE', fontWeight: '600' },
+
+  // Badges
+  badgesHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginTop: 24, marginBottom: 12 },
+  badgesTitle:  { fontSize: 16, fontWeight: '900' },
+  badgesCount:  { fontSize: 12, fontWeight: '700' },
+
+  badgesReopenCard: {
+    flexDirection: 'row', alignItems: 'center', gap: 12,
+    borderRadius: 16, borderWidth: 1.5, padding: 14, marginTop: 20,
+  },
+  badgesReopenLink: { fontSize: 12, fontWeight: '800' },
+
+  // Badges & Streak popup
+  popupBackdrop: { flex: 1, backgroundColor: 'rgba(0,0,0,0.5)', justifyContent: 'center', alignItems: 'center', padding: 20 },
+  popupCard: { width: '100%', maxWidth: 420, maxHeight: '85%', borderRadius: 24, padding: 22 },
+  popupTitle: { fontSize: 20, fontWeight: '900', textAlign: 'center', marginBottom: 16 },
+  popupBadgeScroll: { maxHeight: 320 },
+  popupCloseBtn: { backgroundColor: '#6C5CE7', borderRadius: 16, paddingVertical: 14, alignItems: 'center', marginTop: 16 },
+  popupCloseBtnText: { color: '#FFFFFF', fontSize: 15, fontWeight: '900' },
+
+  streakRow: {
+    flexDirection: 'row', alignItems: 'center', gap: 14,
+    borderRadius: 16, borderWidth: 1.5, padding: 16, marginBottom: 8,
+  },
+  streakDay: { fontSize: 18, fontWeight: '900' },
+  streakBest: { fontSize: 12, fontWeight: '700', marginTop: 2 },
 });

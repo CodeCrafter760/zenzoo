@@ -2,6 +2,7 @@ import React, { useEffect, useRef } from 'react';
 import {
   View, Text, TouchableOpacity, StyleSheet, SafeAreaView, Animated, Easing,
 } from 'react-native';
+import { createAudioPlayer, setAudioModeAsync, type AudioSource } from 'expo-audio';
 import { useZenZoo } from '../context/ZenZooContext';
 import { LIGHT_THEME, DARK_THEME } from '../theme/theme';
 import { Feather } from '@expo/vector-icons';
@@ -14,9 +15,11 @@ export type AffAnimType =
 
 export interface AffirmationItem {
   text: string;
+  emoji: string;
   color: string;
   bg: string;
   anim: AffAnimType;
+  audio: AudioSource;
   es?: string;
 }
 
@@ -611,6 +614,28 @@ interface Props {
 export default function AffirmationPlayer({ item, onClose }: Props) {
   const { isDark, language, t } = useZenZoo();
   const T = isDark ? DARK_THEME : LIGHT_THEME;
+
+  // Replays the affirmation's audio every 5 seconds for as long as this screen is open.
+  useEffect(() => {
+    let cancelled = false;
+    const player = createAudioPlayer(item.audio);
+
+    setAudioModeAsync({ playsInSilentMode: true, shouldPlayInBackground: false }).then(() => {
+      if (!cancelled) player.play();
+    });
+
+    const interval = setInterval(() => {
+      player.seekTo(0);
+      player.play();
+    }, 5000);
+
+    return () => {
+      cancelled = true;
+      clearInterval(interval);
+      player.pause();
+      player.remove();
+    };
+  }, [item.audio]);
 
   return (
     <SafeAreaView style={[S.safe, { backgroundColor: isDark ? T.bg : item.bg }]}>

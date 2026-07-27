@@ -1,11 +1,12 @@
 import React, { useState, useRef, useEffect } from 'react';
 import {
   StyleSheet, Text, View, ScrollView, SafeAreaView,
-  TouchableOpacity, Animated, TextInput, Switch, Alert, ActivityIndicator, type DimensionValue,
+  TouchableOpacity, Animated, TextInput, Switch, ActivityIndicator, type DimensionValue,
 } from 'react-native';
 import { useZenZoo, COINS_PER_LEVEL } from '../context/ZenZooContext';
 import { LIGHT_THEME, DARK_THEME, PALETTE, RADIUS, SHADOW } from '../theme/theme';
 import { tapHaptic, successHaptic, errorHaptic } from '../utils/haptics';
+import { showAlert, showConfirm } from '../utils/alert';
 import { findSpecies } from '../data/species';
 import { findMood } from '../data/moods';
 import PetAvatar, { asEyeStyle, asHairStyle, hatStyleFromId, outfitStyleFromId } from '../components/sprites/PetAvatar';
@@ -318,7 +319,7 @@ function ChangePinFlow({ profile, onDone, T, isDark }: { profile: ParentProfile;
     if (input === draft && draft) {
       setProfilePin(draft);
       successHaptic();
-      Alert.alert(t('PIN Updated'), t('Your Parent Dashboard PIN has been changed.'));
+      showAlert(t('PIN Updated'), t('Your Parent Dashboard PIN has been changed.'));
       onDone();
     } else {
       setError(t("PINs didn't match — let's try again"));
@@ -429,7 +430,7 @@ function ParentDashboardContent({ profile, onNavigate }: { profile: ParentProfil
   if (view === 'changePin') return <ChangePinFlow profile={profile} T={T} isDark={isDark} onDone={() => setView('dashboard')} />;
 
   const confirmSignOut = () => {
-    Alert.alert(
+    showConfirm(
       t('Sign Out?'),
       t("You'll need your email and password to sign back in."),
       [
@@ -484,7 +485,7 @@ function ParentDashboardContent({ profile, onNavigate }: { profile: ParentProfil
   const recentMoods = [...moodEntries].reverse().slice(0, 3);
 
   const confirmResetScreenTime = () => {
-    Alert.alert(
+    showConfirm(
       t('Reset Screen Time?'),
       t("This will reset today's screen time counter back to 0."),
       [

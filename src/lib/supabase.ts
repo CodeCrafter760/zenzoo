@@ -19,5 +19,9 @@ export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
     // sign-in again, rather than silently restoring a previous session.
     persistSession: false,
     detectSessionInUrl: false,
+    // Google sign-in exchanges a `?code=` via exchangeCodeForSession(), which
+    // only exists under PKCE — the default 'implicit' flow returns tokens in
+    // a URL fragment instead and has no code to exchange.
+    flowType: 'pkce',
   },
 });

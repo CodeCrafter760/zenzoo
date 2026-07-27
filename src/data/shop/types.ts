@@ -10,4 +10,6 @@ export interface ShopItem {
   type?: string;
   /** Only set for Backgrounds — drives cost tiering and the rarity badge in the shop. */
   rarity?: ColorRarity;
+  /** Earned only (streak rewards, etc.) — never shown in the purchasable shop grid. */
+  exclusive?: boolean;
 }

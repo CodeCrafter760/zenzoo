@@ -3,7 +3,7 @@ import {
   View, Text, StyleSheet, TouchableOpacity, Animated,
   Easing, ScrollView, Dimensions, type DimensionValue,
 } from 'react-native';
-import { Audio, AVPlaybackSource } from 'expo-av';
+import { createAudioPlayer, setAudioModeAsync, type AudioPlayer, type AudioSource } from 'expo-audio';
 import { useZenZoo } from '../context/ZenZooContext';
 import { PALETTE, RADIUS, SHADOW } from '../theme/theme';
 
@@ -15,7 +15,7 @@ const { width: SW, height: SH } = Dimensions.get('window');
 //   • a local file:  require('../../assets/sounds/rain.mp3')
 //   • a remote URI:  { uri: 'https://your-cdn.com/rain.mp3' }
 // ─────────────────────────────────────────────────────────────────────────────
-const SOUNDS: { id: string; label: string; emoji: string; source: AVPlaybackSource | null }[] = [
+const SOUNDS: { id: string; label: string; emoji: string; source: AudioSource | null }[] = [
   { id: 'rain',  label: 'Rainforest Canopy', emoji: '🌧️', source: require('../../assets/sounds/canopy.mp3')  },
   { id: 'lofi',  label: 'Lo-Fi Hum', emoji: '🎵', source: require('../../assets/sounds/lofi.mp3')  },
   { id: 'ocean', label: 'Whale Song',  emoji: '🌊', source: require('../../assets/sounds/whale.mp3')  },
@@ -80,7 +80,7 @@ export default function BedroomRoutineScreen({ onNavigate }: { onNavigate?: (s: 
   const starAnims   = useRef(STARS.map((_, i) => new Animated.Value(0.2 + (i % 5) * 0.15))).current;
 
   // ── Refs for stable access across async callbacks ─────────────────────────
-  const soundRef         = useRef<Audio.Sound | null>(null);
+  const soundRef         = useRef<AudioPlayer | null>(null);
   const breathActiveRef  = useRef(false);
   const breathTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const timerIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
@@ -176,8 +176,8 @@ export default function BedroomRoutineScreen({ onNavigate }: { onNavigate?: (s: 
   const unloadCurrent = useCallback(async () => {
     if (soundRef.current) {
       try {
-        await soundRef.current.stopAsync();
-        await soundRef.current.unloadAsync();
+        soundRef.current.pause();
+        soundRef.current.remove();
       } catch (_) {}
       soundRef.current = null;
     }
@@ -196,15 +196,15 @@ export default function BedroomRoutineScreen({ onNavigate }: { onNavigate?: (s: 
       setIsLoading(true);
       await unloadCurrent();
       try {
-        await Audio.setAudioModeAsync({ playsInSilentModeIOS: true, staysActiveInBackground: false });
-        const { sound } = await Audio.Sound.createAsync(
-          cfg.source,
-          { shouldPlay: true, isLooping: true, volume: 1.0 }
-        );
-        soundRef.current = sound;
+        await setAudioModeAsync({ playsInSilentMode: true, shouldPlayInBackground: false });
+        const player = createAudioPlayer(cfg.source);
+        player.loop = true;
+        player.volume = 1.0;
+        player.play();
+        soundRef.current = player;
         setActiveSound(id);
       } catch (err) {
-        console.warn('expo-av: failed to load sound', err);
+        console.warn('expo-audio: failed to load sound', err);
       } finally {
         setIsLoading(false);
       }

@@ -1,4 +1,7 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
+import { showAlert } from '../utils/alert';
+import * as WebBrowser from 'expo-web-browser';
+import * as Linking from 'expo-linking';
 import type { Session } from '@supabase/supabase-js';
 export { LIGHT_THEME, DARK_THEME } from '../theme/theme';
 export { SHOP_CATALOG as shopCatalog } from '../data/shop';
@@ -8,6 +11,13 @@ export type { StoryAgeGroup } from '../data/stories/types';
 import { translate, type Language } from '../i18n';
 export type { Language } from '../i18n';
 import { supabase } from '../lib/supabase';
+import { successHaptic } from '../utils/haptics';
+
+// Closes the OAuth popup/tab once Google redirects back — a no-op on native, required on web.
+WebBrowser.maybeCompleteAuthSession();
+import { STREAK_REWARDS } from '../data/streakRewards';
+import { BADGES, type BadgeStats } from '../data/badges';
+export { BADGES } from '../data/badges';
 
 export const COINS_PER_LEVEL = 50;
 
@@ -68,6 +78,12 @@ export interface ChildProfile {
   shopLocked: boolean;
   dailyLimitMinutes: number | null;
   bedtimeHour: number | null;
+  // Gentle streaks & badges
+  lastCheckInDate: string | null;
+  totalCheckIns: number;
+  storiesFinished: number;
+  unlockedBadges: string[];
+  claimedStreakRewards: number[];
 }
 
 const DEFAULT_GENETICS: Genetics = { bodyColor: '#FFD3B6', eyes: 'Wonder', hair: 'None', species: 'Bear' };
@@ -100,6 +116,13 @@ function rowToChild(row: any): ChildProfile {
     shopLocked: row.shop_locked,
     dailyLimitMinutes: row.daily_limit_minutes,
     bedtimeHour: row.bedtime_hour,
+    // `?? default` guards against reading a row before the streaks/badges migration
+    // (see supabase/schema.sql) has been run — the columns would just be undefined.
+    lastCheckInDate: row.last_check_in_date ?? null,
+    totalCheckIns: row.total_check_ins ?? 0,
+    storiesFinished: row.stories_finished ?? 0,
+    unlockedBadges: row.unlocked_badges ?? [],
+    claimedStreakRewards: row.claimed_streak_rewards ?? [],
   };
 }
 
@@ -123,6 +146,11 @@ function childToRow(c: ChildProfile) {
     shop_locked: c.shopLocked,
     daily_limit_minutes: c.dailyLimitMinutes,
     bedtime_hour: c.bedtimeHour,
+    last_check_in_date: c.lastCheckInDate,
+    total_check_ins: c.totalCheckIns,
+    stories_finished: c.storiesFinished,
+    unlocked_badges: c.unlockedBadges,
+    claimed_streak_rewards: c.claimedStreakRewards,
   };
 }
 
@@ -142,6 +170,7 @@ interface ZenZooContextType {
   profile: ParentProfile | null;
   signUp: (email: string, password: string, name: string) => Promise<AuthResult>;
   signIn: (email: string, password: string) => Promise<AuthResult>;
+  signInWithGoogle: () => Promise<AuthResult>;
   signOut: () => Promise<void>;
   resetPasswordForEmail: (email: string) => Promise<AuthResult>;
   reauthenticate: (password: string) => Promise<AuthResult>;
@@ -162,6 +191,10 @@ interface ZenZooContextType {
   equipItem: (category: keyof EquippedItems, itemId: string | null) => void;
   buyItem: (itemId: string, cost: number) => void;
   awardCoins: (amount: number) => void;
+  storiesFinished: number;
+  finishStory: (coins: number) => void;
+  totalCheckIns: number;
+  unlockedBadges: string[];
   isDark: boolean;
   toggleDark: () => void;
   language: Language;
@@ -210,7 +243,13 @@ interface ZenZooContextType {
 const ZenZooContext = createContext<ZenZooContextType | undefined>(undefined);
 
 export function ZenZooProvider({ children }: { children: React.ReactNode }) {
-  const [isDark,   setIsDark]   = useState(false);
+  // Defaults to dark mode during night hours and light mode otherwise (matching
+  // the "Good Morning"/"Good Night" home screen greeting), but this is only the
+  // starting point — toggleDark() below lets the user switch either way anytime.
+  const [isDark,   setIsDark]   = useState(() => {
+    const h = new Date().getHours();
+    return h < 6 || h >= 20;
+  });
   const [isAdmin,  setIsAdmin]  = useState(false);
   const [languageState, setLanguageState] = useState<Language>('en');
   const toggleDark  = () => setIsDark(d => !d);
@@ -268,6 +307,56 @@ export function ZenZooProvider({ children }: { children: React.ReactNode }) {
     return { error: error?.message ?? null };
   };
 
+  // Opens Google's consent screen in an in-app browser, then completes the PKCE exchange
+  // with the `code` param Supabase appends to the redirect back into the app. Works for
+  // both sign-in and sign-up — Supabase creates the account on first Google login.
+  const signInWithGoogle = async (): Promise<AuthResult> => {
+    try {
+      const redirectTo = Linking.createURL('auth/callback');
+      const { data, error } = await supabase.auth.signInWithOAuth({
+        provider: 'google',
+        options: { redirectTo, skipBrowserRedirect: true },
+      });
+      if (error || !data?.url) return { error: error?.message ?? 'Could not start Google sign-in' };
+
+      const result = await WebBrowser.openAuthSessionAsync(data.url, redirectTo);
+      if (result.type !== 'success') {
+        // User closed the browser themselves — not a real error, just no-op.
+        return { error: null };
+      }
+
+      // Supabase can complete this two different ways depending on project config:
+      // PKCE appends `?code=` to the redirect; the older implicit flow instead puts
+      // `access_token`/`refresh_token` in the URL *fragment* (after `#`), which
+      // `Linking.parse` doesn't read (it only parses the query string) — so that
+      // part is parsed by hand here.
+      const { queryParams } = Linking.parse(result.url);
+      const hashIndex = result.url.indexOf('#');
+      const fragmentParams = hashIndex >= 0 ? new URLSearchParams(result.url.slice(hashIndex + 1)) : null;
+
+      const errorDescription = queryParams?.error_description ?? fragmentParams?.get('error_description');
+      if (errorDescription) return { error: String(errorDescription) };
+
+      const codeParam = queryParams?.code;
+      const code = Array.isArray(codeParam) ? codeParam[0] : codeParam;
+      if (code) {
+        const { error: exchangeError } = await supabase.auth.exchangeCodeForSession(code);
+        return { error: exchangeError?.message ?? null };
+      }
+
+      const accessToken = fragmentParams?.get('access_token');
+      const refreshToken = fragmentParams?.get('refresh_token');
+      if (accessToken && refreshToken) {
+        const { error: setSessionError } = await supabase.auth.setSession({ access_token: accessToken, refresh_token: refreshToken });
+        return { error: setSessionError?.message ?? null };
+      }
+
+      return { error: 'Google sign-in did not return an authorization code' };
+    } catch (e) {
+      return { error: e instanceof Error ? e.message : 'Google sign-in failed' };
+    }
+  };
+
   const signOut = async () => {
     await supabase.auth.signOut();
   };
@@ -323,8 +412,27 @@ export function ZenZooProvider({ children }: { children: React.ReactNode }) {
     setChildProfiles(prev => prev.map(c => {
       if (c.id !== id) return c;
       const next = updater(c);
-      supabase.from('children').update(childToRow(next)).eq('id', id).then(({ error }) => {
-        if (error) console.warn('Failed to sync child', id, error.message);
+      const row = childToRow(next);
+      supabase.from('children').update(row).eq('id', id).then(({ error }) => {
+        if (!error) return;
+        // The streaks/badges columns (see supabase/schema.sql) haven't been migrated onto
+        // this Supabase project yet — a single unknown column fails the whole update, so
+        // retry with just the pre-existing fields rather than silently breaking every
+        // other save (coins, items, equipped, etc.) until the migration is run.
+        if (
+          error.code === '42703' || error.code === 'PGRST204'
+          || error.message?.includes('does not exist') || error.message?.includes('Could not find')
+        ) {
+          const {
+            last_check_in_date, total_check_ins, stories_finished, unlocked_badges, claimed_streak_rewards,
+            ...legacyRow
+          } = row;
+          supabase.from('children').update(legacyRow).eq('id', id).then(({ error: retryError }) => {
+            if (retryError) console.warn('Failed to sync child', id, retryError.message);
+          });
+          return;
+        }
+        console.warn('Failed to sync child', id, error.message);
       });
       return next;
     }));
@@ -383,6 +491,9 @@ export function ZenZooProvider({ children }: { children: React.ReactNode }) {
   const shopLocked = activeChild?.shopLocked ?? false;
   const dailyLimitMinutes = activeChild?.dailyLimitMinutes ?? null;
   const bedtimeHour = activeChild?.bedtimeHour ?? null;
+  const storiesFinished = activeChild?.storiesFinished ?? 0;
+  const totalCheckIns = activeChild?.totalCheckIns ?? 0;
+  const unlockedBadges = activeChild?.unlockedBadges ?? [];
   const level = Math.floor(calmCoins / COINS_PER_LEVEL) + 1;
 
   const updateGenetic = (key: keyof Genetics, value: string) => {
@@ -399,6 +510,15 @@ export function ZenZooProvider({ children }: { children: React.ReactNode }) {
 
   const awardCoins = (amount: number) => {
     updateActiveChild(c => ({ ...c, calmCoins: c.calmCoins + amount, totalCoinsEarned: c.totalCoinsEarned + amount }));
+  };
+
+  const finishStory = (coins: number) => {
+    updateActiveChild(c => ({
+      ...c,
+      calmCoins: c.calmCoins + coins,
+      totalCoinsEarned: c.totalCoinsEarned + coins,
+      storiesFinished: c.storiesFinished + 1,
+    }));
   };
 
   const addJournalEntry = (content: string) => {
@@ -448,6 +568,109 @@ export function ZenZooProvider({ children }: { children: React.ReactNode }) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [streak, activeChildId]);
 
+  // ── Gentle daily check-in ────────────────────────────────────────────────
+  // No punishment for missed days: a single skipped day never breaks the streak, and a
+  // bigger gap just quietly starts a fresh one — no "you lost your streak" messaging.
+  useEffect(() => {
+    if (!activeChildId || !activeChild) return;
+    const today = new Date().toDateString();
+    if (activeChild.lastCheckInDate === today) return;
+
+    const prevDate = activeChild.lastCheckInDate ? new Date(activeChild.lastCheckInDate) : null;
+    const daysSince = prevDate ? Math.round((new Date(today).getTime() - prevDate.getTime()) / 86400000) : null;
+
+    let nextStreak: number;
+    if (daysSince === null) {
+      nextStreak = 1; // very first check-in ever — this IS day 1, not day+1
+    } else if (daysSince <= 1) {
+      nextStreak = activeChild.streak + 1;
+    } else if (daysSince === 2) {
+      nextStreak = activeChild.streak; // one missed day is always forgiven
+    } else {
+      nextStreak = 1; // a bigger gap just starts fresh — no shame about it
+    }
+
+    const newlyClaimed = STREAK_REWARDS.filter(
+      r => nextStreak >= r.day && !activeChild.claimedStreakRewards.includes(r.day)
+    );
+    const coinBonus = newlyClaimed.reduce((sum, r) => sum + r.coins, 0);
+    const newItemIds = newlyClaimed.filter(r => r.itemId).map(r => r.itemId as string);
+
+    updateActiveChild(c => ({
+      ...c,
+      streak: nextStreak,
+      longestStreak: Math.max(c.longestStreak, nextStreak),
+      lastCheckInDate: today,
+      totalCheckIns: c.totalCheckIns + 1,
+      calmCoins: c.calmCoins + coinBonus,
+      totalCoinsEarned: c.totalCoinsEarned + coinBonus,
+      ownedItems: Array.from(new Set([...c.ownedItems, ...newItemIds])),
+      claimedStreakRewards: [...c.claimedStreakRewards, ...newlyClaimed.map(r => r.day)],
+    }));
+
+    successHaptic();
+    let title: string;
+    let message: string;
+    if (daysSince !== null && daysSince > 2) {
+      title = t('🌱 Fresh start!');
+      message = t("Welcome back! Every day is a new chance — you're on Day 1.");
+    } else if (daysSince === 2) {
+      title = t('🌤️ Welcome back!');
+      message = t('Missing one day is okay — your streak is safe at Day {n}!').replace('{n}', String(nextStreak));
+    } else {
+      title = t('🔥 Day {n}!').replace('{n}', String(nextStreak));
+      message = t('You checked in {n} days in a row. Keep it up!').replace('{n}', String(nextStreak));
+    }
+    if (newlyClaimed.length > 0) {
+      const rewardBits = newlyClaimed
+        .map(r => (r.itemName ? `${t(r.itemName)} + ${r.coins} ${t('coins')}` : `${r.coins} ${t('coins')}`))
+        .join(', ');
+      message += `\n\n🎁 ${t('Reward')}: ${rewardBits}!`;
+    }
+    showAlert(title, message);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [activeChildId]);
+
+  // ── Badges ────────────────────────────────────────────────────────────────
+  // Unlocks the moment a stat crosses a threshold (not gated to once/day), so finishing
+  // e.g. a breathing session can celebrate instantly rather than waiting for next login.
+  useEffect(() => {
+    if (!activeChildId || !activeChild) return;
+    const stats: BadgeStats = {
+      breathingSessions: activeChild.breathingSessions,
+      focusSessionsCompleted: activeChild.focusSessionsCompleted,
+      storiesFinished: activeChild.storiesFinished,
+      longestStreak: activeChild.longestStreak,
+      totalCoinsEarned: activeChild.totalCoinsEarned,
+      level,
+      ownedItemsCount: activeChild.ownedItems.length,
+      journalEntriesCount: activeChild.journalEntries.length,
+      moodEntriesCount: activeChild.moodEntries.length,
+    };
+    const newlyEarned = BADGES.filter(b => b.isEarned(stats) && !activeChild.unlockedBadges.includes(b.id));
+    if (newlyEarned.length === 0) return;
+
+    updateActiveChild(c => ({ ...c, unlockedBadges: [...c.unlockedBadges, ...newlyEarned.map(b => b.id)] }));
+
+    successHaptic();
+    const message = newlyEarned.length === 1
+      ? t('You unlocked "{name}"!').replace('{name}', `${newlyEarned[0].emoji} ${t(newlyEarned[0].name)}`)
+      : newlyEarned.map(b => `${b.emoji} ${t(b.name)}`).join(', ');
+    showAlert(t("🏅 Badge Earned!"), message);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [
+    activeChildId,
+    activeChild?.breathingSessions,
+    activeChild?.focusSessionsCompleted,
+    activeChild?.storiesFinished,
+    activeChild?.longestStreak,
+    activeChild?.totalCoinsEarned,
+    level,
+    activeChild?.ownedItems.length,
+    activeChild?.journalEntries.length,
+    activeChild?.moodEntries.length,
+  ]);
+
   // ── Parent Dashboard — controls targeted at a specific (possibly non-active) child ──
   const setChildShopLocked = (id: string, locked: boolean) => applyChildUpdate(id, c => ({ ...c, shopLocked: locked }));
   const setChildDailyLimitMinutes = (id: string, n: number | null) => applyChildUpdate(id, c => ({ ...c, dailyLimitMinutes: n }));
@@ -465,14 +688,20 @@ export function ZenZooProvider({ children }: { children: React.ReactNode }) {
     ownedItems: STARTER_BACKGROUNDS,
     equipped: { ...DEFAULT_EQUIPPED },
     genetics: { ...DEFAULT_GENETICS },
+    lastCheckInDate: null,
+    totalCheckIns: 0,
+    storiesFinished: 0,
+    unlockedBadges: [],
+    claimedStreakRewards: [],
   }));
 
   return (
     <ZenZooContext.Provider
       value={{
-        session, authLoading, profile, signUp, signIn, signOut, resetPasswordForEmail, reauthenticate,
+        session, authLoading, profile, signUp, signIn, signInWithGoogle, signOut, resetPasswordForEmail, reauthenticate,
         setProfilePin, updateProfile, isParentUnlocked, unlockParent, lockParent,
         ageGroup, genetics, equipped, ownedItems, calmCoins, level, streak, updateGenetic, equipItem, buyItem, awardCoins,
+        storiesFinished, finishStory, totalCheckIns, unlockedBadges,
         isDark, toggleDark, language: languageState, setLanguage, t, journalEntries, addJournalEntry, moodEntries, addMoodEntry,
         childProfiles, childrenLoading, activeChildId, addChildProfile, switchChild, renameChildProfile, deleteChildProfile,
         screenTimeMinutes, focusMinutes, focusSessionsCompleted, addFocusMinutes,

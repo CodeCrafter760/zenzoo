@@ -10,7 +10,7 @@ const wiggleWorm: StoryItem = {
   anim: 'wiggle-worm',
   audio: null,
   genre: 'Sleep',
-  ageGroup: 'Big Kid (6-9)',
+  ageGroup: 'Pre-Teen (6-9)',
   content: `Close your eyes and imagine you are a little worm, tucked deep under the soft, warm earth. Today you feel wiggly — your tail wiggles, your middle wiggles, even your nose wiggles! You wriggle this way, then that way, and you just can't seem to settle down.
 
 Above you, the sky is turning deep indigo and soft violet, the colors of evening settling in. It's almost time for sleep, but your wiggles don't know that yet.

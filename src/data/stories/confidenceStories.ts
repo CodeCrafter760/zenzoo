@@ -223,7 +223,7 @@ Y así, tal como la vieja raíz le había enseñado alguna vez, Pip transmitió 
     anim: 'brave-star',
     audio: null,
     genre: 'Confidence',
-    ageGroup: 'Big Kid (6-9)',
+    ageGroup: 'Pre-Teen (6-9)',
     content: `High in the night sky, among thousands of twinkling stars, there was one small star named Cassiopeia — though everyone just called her Cassie — who worried constantly that her light wasn't bright enough compared to the dazzling stars around her.
 
 "Look how brightly Sirius shines," she said one evening, watching a brilliant star nearby blaze confidently against the dark sky. "My light seems so dim in comparison."
@@ -447,7 +447,7 @@ Mientras la noche caía sobre la feria, Buttercup flotaba en paz entre sus nuevo
     anim: 'growing-plant',
     audio: null,
     genre: 'Confidence',
-    ageGroup: 'Big Kid (6-9)',
+    ageGroup: 'Pre-Teen (6-9)',
     content: `In a vegetable garden behind a small farmhouse, a young bean sprout named Pearl had grown taller and prouder every single day, reaching confidently toward the warm summer sun. But one stormy night, heavy winds and pounding rain battered the garden, and by morning, Pearl found herself bent painfully low, her once-proud stem curved almost all the way to the muddy ground.
 
 "I'll never stand tall again," she said miserably, staring at her bent, crumpled form. "The storm has ruined me completely."
@@ -647,7 +647,7 @@ Mientras avanzaba la tarde, Amit voló su cometa más alto y con más confianza 
     anim: 'focus-crystal',
     audio: null,
     genre: 'Confidence',
-    ageGroup: 'Big Kid (6-9)',
+    ageGroup: 'Pre-Teen (6-9)',
     content: `Deep within a quiet cave, dozens of crystals grew slowly along the rocky walls, each one sparkling in its own unique color. But one small crystal, named Opal, felt convinced that her pale, gentle glow simply couldn't compare to the dazzling, vibrant colors of the crystals surrounding her.
 
 "Look how brilliantly Ruby shines," Opal said, watching a nearby crystal glow with a deep, confident red light. "And Sapphire's blue light is so striking. My glow just seems so plain and dull in comparison."
@@ -851,7 +851,7 @@ Desde esa noche en adelante, Wink continuó haciendo sus saltos de estrella fuga
     anim: 'growing-plant',
     audio: null,
     genre: 'Confidence',
-    ageGroup: 'Big Kid (6-9)',
+    ageGroup: 'Pre-Teen (6-9)',
     content: `On a windswept hillside, a young tree named Sequoia had grown up watching fierce storms roll through every autumn, tearing branches from weaker trees, sometimes even uprooting older ones entirely. Every year, as storm season approached, Sequoia felt a familiar dread building in her leaves.
 
 "I'm not strong enough to survive another storm season," she confided to an ancient, towering tree named Elder Pine, who had weathered hundreds of storms over his long lifetime. "What if this is the year I finally get uprooted?"
@@ -950,7 +950,7 @@ Años después, Sequoia había crecido hasta convertirse en uno de los árboles 
     anim: 'kite-flying',
     audio: null,
     genre: 'Confidence',
-    ageGroup: 'Big Kid (6-9)',
+    ageGroup: 'Pre-Teen (6-9)',
     content: `Every spring, the village held a grand Kite Festival, where families gathered on the wide meadow to fly kites of every shape and color. This year, for the very first time, a young girl named Suki had built her own kite from scratch — a simple but carefully stitched fish shape, painted in shades of orange and blue.
 
 "I don't think I should fly it," she told her father, clutching her homemade kite nervously as they walked toward the festival grounds, already crowded with families and colorful, professionally-made kites soaring overhead. "What if it doesn't fly right in front of everyone? What if people laugh?"

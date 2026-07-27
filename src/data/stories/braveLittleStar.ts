@@ -8,7 +8,7 @@ const braveLittleStar: StoryItem = {
   color: '#FFB830',
   bg: '#FFF8E0',
   anim: 'brave-star',
-  audio: null,
+  audio: require('../../../assets/Stories_audio/the_brave_little_star.m4a'),
   genre: 'Confidence',
   ageGroup: 'Preschool (4-6)',
   content: `High up in the night sky, there was a very small star named Pip. Every evening, the other stars would glow brightly, but Pip was afraid.

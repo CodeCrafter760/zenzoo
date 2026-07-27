@@ -123,7 +123,7 @@ Desde ese día en adelante, cada vez que Noa notaba que sus sentimientos cambiab
     anim: 'forest-friends',
     audio: null,
     genre: 'Emotions',
-    ageGroup: 'Big Kid (6-9)',
+    ageGroup: 'Pre-Teen (6-9)',
     content: `Deep in an old forest, a wise grandmother owl named Ophelia gathered her young forest friends together for their weekly meeting beneath the great oak tree. Today, she noticed something unusual — each animal seemed to be carrying a very different feeling.
 
 A small rabbit named Bramble hopped over, tears welling in his eyes. "I feel so sad today," he admitted. "My favorite flower patch got trampled by a passing deer."
@@ -391,7 +391,7 @@ Su madre sonrió, abrazándola cerca. —Eso es algo hermoso de haber aprendido,
     anim: 'calm-river',
     audio: null,
     genre: 'Emotions',
-    ageGroup: 'Big Kid (6-9)',
+    ageGroup: 'Pre-Teen (6-9)',
     content: `Along a winding river that flowed sometimes gently and sometimes powerfully through a green forest, a young otter named Kai had always been afraid of the stronger, faster-moving currents. Whenever the water rushed too quickly, he would scramble to the riverbank, terrified of what might happen if he simply let the current carry him.
 
 "Big feelings feel exactly like that fast current to me," he confided to his grandmother otter one afternoon, watching the river rush powerfully past a cluster of rocks. "When I feel really angry, or really sad, or really scared, it feels like I'll be swept away and never find my way back to calm."
@@ -583,7 +583,7 @@ Desde esa noche en adelante, cada vez que las noches nubladas bloqueaban tempora
     anim: 'weather-mood',
     audio: null,
     genre: 'Emotions',
-    ageGroup: 'Big Kid (6-9)',
+    ageGroup: 'Pre-Teen (6-9)',
     content: `A young boy named Diego kept a special weather journal, where every single day, he drew a picture of the actual weather outside his window — sunny, cloudy, rainy, or stormy. But one afternoon, his teacher gave a new assignment: to also draw the "weather" happening inside his own feelings each day.
 
 "That seems strange," Diego said to his grandfather that evening. "Weather is outside. Feelings are inside. How can they be the same thing?"
@@ -915,7 +915,7 @@ Mientras el sol comenzaba a ponerse, pintando el cielo de naranjas y rosas brill
     anim: 'forest-friends',
     audio: null,
     genre: 'Emotions',
-    ageGroup: 'Big Kid (6-9)',
+    ageGroup: 'Pre-Teen (6-9)',
     content: `In a cozy burrow beneath a fallen log, a young hedgehog named Pickle had been feeling sad for several days, ever since her best friend, a rabbit named Willow, had been too busy to play. But Pickle kept her sadness curled up tightly inside herself, just like she curled into a ball whenever she felt threatened.
 
 "I don't want to bother anyone with my sad feelings," she told herself, keeping her worries hidden even from her closest forest friends.

@@ -119,7 +119,7 @@ Y así, durante todo aquel verano, las luciérnagas de ese prado siguieron reuni
     anim: 'sunrise-hug',
     audio: null,
     genre: 'Kindness',
-    ageGroup: 'Big Kid (6-9)',
+    ageGroup: 'Pre-Teen (6-9)',
     content: `In a faraway mountain range, two tall peaks stood on opposite sides of a wide, rocky valley. One peak, named Granite, was known for being sturdy and strong, but always kept to himself, standing tall and alone. The other peak, named Ivy, was covered in soft green moss, but felt lonely, watching the sunrise every morning with no one close by to share it with.
 
 Every single morning, the sun would rise slowly over the horizon, painting the sky in brilliant oranges and pinks, but Granite and Ivy each watched it alone, separated by the wide, empty valley between them.
@@ -319,7 +319,7 @@ Visitantes del pueblo cercano comenzaron a pasar solo para admirar lo vibrante y
     anim: 'forest-friends',
     audio: null,
     genre: 'Kindness',
-    ageGroup: 'Big Kid (6-9)',
+    ageGroup: 'Pre-Teen (6-9)',
     content: `Deep in a quiet forest lived a badger named Grumbles, who had earned his name honestly — he preferred to keep to himself, grumbling about noisy squirrels and messy raccoons, rarely lending a helping paw to anyone.
 
 One rainy afternoon, Grumbles was trudging back to his den when he passed a young rabbit named Clover, struggling to drag a heavy fallen branch off the path leading to her burrow.
@@ -511,7 +511,7 @@ Esa noche, mientras Mira caminaba a casa sosteniendo su farol resplandeciente co
     anim: 'jar-of-fireflies',
     audio: null,
     genre: 'Kindness',
-    ageGroup: 'Big Kid (6-9)',
+    ageGroup: 'Pre-Teen (6-9)',
     content: `In a small neighborhood at the edge of a meadow, a boy named Teddy had a best friend named Oscar who had recently moved away to a new town, far from all his old friends. One evening, Teddy's mother mentioned that Oscar had written a letter, saying he felt lonely in his new home.
 
 "What can I do to help him feel better?" Teddy asked, worried about his faraway friend.
@@ -715,7 +715,7 @@ Para el final del día, Deshawn también había hecho nuevos amigos, sintiéndos
     anim: 'forest-friends',
     audio: null,
     genre: 'Kindness',
-    ageGroup: 'Big Kid (6-9)',
+    ageGroup: 'Pre-Teen (6-9)',
     content: `In the middle of a wide meadow stood a magnificent old oak tree named Oakley, the tallest and broadest tree for miles around. Oakley took great pride in his impressive size, often boasting to smaller plants and passing animals about his enormous trunk and sprawling branches.
 
 "None of you will ever grow as tall or as wide as me," Oakley would say to the young saplings growing nearby, or to the small bushes struggling in his shadow.
@@ -918,7 +918,7 @@ Milo sonrió, sintiéndose orgulloso, comprendiendo ahora que sus simples y pequ
     anim: 'jar-of-fireflies',
     audio: null,
     genre: 'Kindness',
-    ageGroup: 'Big Kid (6-9)',
+    ageGroup: 'Pre-Teen (6-9)',
     content: `In a small village bakery, an elderly baker named Mrs. Yamada kept a curious jar on her counter, filled with warm, golden honey that seemed to glow faintly, almost like captured sunlight. She called it her Jar of Kindness, and she used a spoonful of it in a special loaf of bread she baked for anyone in the village who seemed to be having a difficult day.
 
 A young boy named Hiro, who helped sweep the bakery floors after school, had always been curious about this special jar. "Where does the honey come from?" he asked one afternoon. "It glows differently than regular honey."

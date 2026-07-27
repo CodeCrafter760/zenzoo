@@ -11,7 +11,7 @@ const focusStories: StoryItem[] = [
     anim: 'lighthouse-beam',
     audio: null,
     genre: 'Focus',
-    ageGroup: 'Big Kid (6-9)',
+    ageGroup: 'Pre-Teen (6-9)',
     content: `On a rocky point where the sea met the sky, there stood a tall white lighthouse. Its keeper, a boy named Sam, had just taken over the job from his grandfather, who had kept the light burning steadily for forty years.
 
 "Remember," his grandfather said on Sam's very first night alone, "your job isn't to light up the whole ocean. It's just to keep one steady beam turning, again and again, so ships far away can find their way home."
@@ -207,7 +207,7 @@ Cuando Priya finalmente salió de la cueva, caminando de regreso por los túnele
     anim: 'brave-star',
     audio: null,
     genre: 'Focus',
-    ageGroup: 'Big Kid (6-9)',
+    ageGroup: 'Pre-Teen (6-9)',
     content: `In a tall oak tree overlooking a wide, dark meadow, a young owl named Percy was learning to hunt at night. His mother had told him that the key to good hunting wasn't sharp eyes or fast wings — it was focus.
 
 "Watch the whole meadow tonight," she said, "and tell me what you see."
@@ -419,7 +419,7 @@ A partir de ese día, Botones practicó hacer una cosa a la vez: construir sus t
     anim: 'lighthouse-beam',
     audio: null,
     genre: 'Focus',
-    ageGroup: 'Big Kid (6-9)',
+    ageGroup: 'Pre-Teen (6-9)',
     content: `Out on the wide, grey sea, a small fishing boat rocked through thick fog, its young captain, a girl named Marisol, gripping the wheel tightly. Somewhere ahead was Foggy Island, where her family's small dock and warm cottage waited — but the fog was so thick she could barely see past the front of her own boat.
 
 "How will I ever find my way home in this?" she said, worried, as waves slapped against the hull and the fog swirled thick and grey in every direction.
@@ -643,7 +643,7 @@ Cuando el sol comenzó a ponerse, bañando el taller con una cálida luz dorada,
     anim: 'wiggle-worm',
     audio: null,
     genre: 'Focus',
-    ageGroup: 'Big Kid (6-9)',
+    ageGroup: 'Pre-Teen (6-9)',
     content: `As autumn leaves began to turn gold and red, a young squirrel named Hazel looked out at her family's tree and felt completely overwhelmed. She needed to gather acorns for winter, collect soft leaves for her nest, find sturdy twigs for repairs, and store extra nuts in a dozen different hiding spots — all before the first snow arrived.
 
 "There's too much to do!" she said, running in frantic circles at the base of the tree. "I don't even know where to start!"
@@ -771,7 +771,7 @@ Avellana miró la pila dorada de bellotas, el nido suave, las ramitas firmes, to
     anim: 'lighthouse-beam',
     audio: null,
     genre: 'Focus',
-    ageGroup: 'Big Kid (6-9)',
+    ageGroup: 'Pre-Teen (6-9)',
     content: `On the deck of a small trading ship called the Wandering Gull, a young captain named Anders was trying to steer his very first voyage across the open sea. He had a compass, a map, and a whole crew depending on him — but his mind kept jumping between a hundred worries at once.
 
 "What if a storm comes? What if we run out of food? What if I steer us the wrong way? What if the crew doesn't trust me?" he muttered to himself, gripping the ship's wheel so tightly his knuckles turned white.
@@ -875,7 +875,7 @@ Anders miró el mar tranquilo y reluciente frente a él, su brújula firme en la
     anim: 'focus-crystal',
     audio: null,
     genre: 'Focus',
-    ageGroup: 'Big Kid (6-9)',
+    ageGroup: 'Pre-Teen (6-9)',
     content: `In an old, dusty attic, a boy named Dev found a strange wooden box tucked inside a trunk. It was covered in intricate carved patterns, and when he opened it, dozens of small wooden puzzle pieces spilled out, each one glowing faintly with a soft golden light.
 
 A note tucked inside the lid read: This puzzle rewards a quiet, focused mind. Jump around, and the pieces dim. Stay with one section, and they'll glow bright enough to show you the way.
@@ -974,7 +974,7 @@ Mientras el brillo dorado del rompecabezas se asentaba lentamente en un respland
     anim: 'brave-star',
     audio: null,
     genre: 'Focus',
-    ageGroup: 'Big Kid (6-9)',
+    ageGroup: 'Pre-Teen (6-9)',
     content: `In a village at the edge of a great forest, a young archer named Yuki was practicing for the harvest festival contest. Every year, the village held a friendly competition, and every year, Yuki's arrows flew wildly off target, no matter how hard she pulled the bowstring.
 
 "I just need more strength," she said, gritting her teeth and pulling the string back as far as it would go. She released the arrow with a snap, and it sailed past the target entirely, burying itself in the grass beyond.

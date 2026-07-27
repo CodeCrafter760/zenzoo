@@ -26,18 +26,22 @@ export type EyeStyle = 'Wonder' | 'Calm' | 'Sparkle' | 'Sleepy';
 export type HairStyle = 'None' | 'Bangs' | 'Mohawk' | 'Double Buns' | 'Wavy';
 export type HatStyle =
   | 'top' | 'crown' | 'beanie' | 'halo'
-  | 'wizard' | 'flower' | 'pirate' | 'party' | 'bow' | 'cap' | 'headphones' | 'antlers' | 'graduation' | 'propeller';
+  | 'wizard' | 'flower' | 'pirate' | 'party' | 'bow' | 'cap' | 'headphones' | 'antlers' | 'graduation' | 'propeller'
+  | 'streakflame';
 export type OutfitStyle =
   | 'ninja' | 'comfy' | 'zen' | 'star'
-  | 'astronaut' | 'superhero' | 'wizard' | 'royal' | 'explorer' | 'rainbow' | 'artist' | 'sporty' | 'pajama' | 'flower';
+  | 'astronaut' | 'superhero' | 'wizard' | 'royal' | 'explorer' | 'rainbow' | 'artist' | 'sporty' | 'pajama' | 'flower'
+  | 'champion';
 
 const HAT_STYLES: HatStyle[] = [
   'top', 'crown', 'beanie', 'halo',
   'wizard', 'flower', 'pirate', 'party', 'bow', 'cap', 'headphones', 'antlers', 'graduation', 'propeller',
+  'streakflame',
 ];
 const OUTFIT_STYLES: OutfitStyle[] = [
   'ninja', 'comfy', 'zen', 'star',
   'astronaut', 'superhero', 'wizard', 'royal', 'explorer', 'rainbow', 'artist', 'sporty', 'pajama', 'flower',
+  'champion',
 ];
 
 // Shop item ids follow `hat_<style>` / `outfit_<style>` — the style suffix must be a HatStyle/OutfitStyle member.
@@ -192,6 +196,25 @@ export function Hat({ style }: { style: HatStyle }) {
           <Rect x={57} y={4} width={6} height={14} fill="#636E72" />
           <Ellipse cx={60} cy={4} rx={14} ry={3} fill="#FDCB6E" />
           <Ellipse cx={60} cy={4} rx={3} ry={14} fill="#FDCB6E" opacity={0.7} />
+        </G>
+      );
+    case 'streakflame':
+      return (
+        <G>
+          <Defs>
+            <LinearGradient id="flameOuterGrad" x1="0" y1="0" x2="0" y2="1">
+              <Stop offset="0" stopColor="#FFEE58" />
+              <Stop offset="1" stopColor="#FF6D00" />
+            </LinearGradient>
+            <LinearGradient id="flameInnerGrad" x1="0" y1="0" x2="0" y2="1">
+              <Stop offset="0" stopColor="#FFFDE7" />
+              <Stop offset="1" stopColor="#FFD700" />
+            </LinearGradient>
+          </Defs>
+          <Path d="M60,4 Q78,24 68,38 Q86,32 76,50 Q64,56 60,56 Q56,56 44,50 Q34,32 52,38 Q42,24 60,4 Z" fill="url(#flameOuterGrad)" />
+          <Path d="M60,16 Q70,28 64,38 Q76,34 68,48 Q62,52 60,52 Q58,52 52,48 Q44,34 56,38 Q50,28 60,16 Z" fill="url(#flameInnerGrad)" />
+          <Circle cx={38} cy={30} r={2} fill="#FFD700" opacity={0.8} />
+          <Circle cx={84} cy={26} r={1.6} fill="#FFA000" opacity={0.8} />
         </G>
       );
     default:
@@ -464,6 +487,24 @@ export function Outfit({ style, bodyColor, r = BODY_R }: { style: OutfitStyle; b
           <G><Circle cx={CX + 10} cy={cy + 20} r={4.5} fill="#FF8FAB" /><Circle cx={CX + 10} cy={cy + 20} r={1.8} fill="#FFD700" /></G>
           <G><Circle cx={CX} cy={cy + 28} r={3.5} fill="#FFB3C7" /><Circle cx={CX} cy={cy + 28} r={1.4} fill="#FFD700" /></G>
           <G><Circle cx={CX + 22} cy={cy + 14} r={3} fill="#F06292" /><Circle cx={CX + 22} cy={cy + 14} r={1.2} fill="#FFD700" /></G>
+        </G>
+      );
+    case 'champion':
+      return (
+        <G>
+          <Defs>
+            <LinearGradient id="championGrad" x1="0" y1="0" x2="0" y2="1">
+              <Stop offset="0" stopColor="#7C4DFF" />
+              <Stop offset="1" stopColor="#4A2FB0" />
+            </LinearGradient>
+          </Defs>
+          <Path d={`M${CX - r},${cy + 4} Q${CX},${cy + 20} ${CX + r},${cy + 4} L${CX + r},${cy + r} L${CX - r},${cy + r} Z`} fill="url(#championGrad)" />
+          <Path d={`M${CX - 10},${cy + 6} L${CX},${cy + 20} L${CX + 10},${cy + 6}`} stroke="#FFD700" strokeWidth={6} fill="none" strokeLinecap="round" />
+          <Path d={`M${CX - 10},${cy + 6} L${CX},${cy + 20} L${CX + 10},${cy + 6}`} stroke="#FFA000" strokeWidth={2} fill="none" strokeLinecap="round" opacity={0.6} />
+          <Circle cx={CX} cy={cy + 26} r={9} fill="#FFD700" stroke="#E8A800" strokeWidth={1.5} />
+          <Polygon points={`${CX},${cy + 21} ${CX + 1.8},${cy + 24.5} ${CX + 5.5},${cy + 25} ${CX + 2.8},${cy + 27.5} ${CX + 3.8},${cy + 31} ${CX},${cy + 29} ${CX - 3.8},${cy + 31} ${CX - 2.8},${cy + 27.5} ${CX - 5.5},${cy + 25} ${CX - 1.8},${cy + 24.5}`} fill="#FFF9E0" />
+          <Circle cx={CX - 18} cy={cy + 10} r={1.4} fill="#FFD700" />
+          <Circle cx={CX + 18} cy={cy + 10} r={1.4} fill="#FFD700" />
         </G>
       );
   }

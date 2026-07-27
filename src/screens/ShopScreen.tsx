@@ -1,8 +1,9 @@
 import React, { useRef, useState } from 'react';
-import { StyleSheet, Text, View, ScrollView, TouchableOpacity, Alert, Animated, LayoutAnimation, Platform, UIManager } from 'react-native';
+import { StyleSheet, Text, View, ScrollView, TouchableOpacity, Animated, LayoutAnimation, Platform, UIManager } from 'react-native';
 import { useZenZoo, shopCatalog } from '../context/ZenZooContext';
 import { LIGHT_THEME, DARK_THEME, PALETTE, RADIUS, SHADOW } from '../theme/theme';
 import { tapHaptic } from '../utils/haptics';
+import { showAlert } from '../utils/alert';
 import { Feather } from '@expo/vector-icons';
 import FontAwesome5 from '@expo/vector-icons/FontAwesome5';
 import { HatIcon, OutfitIcon, hatStyleFromId, outfitStyleFromId } from '../components/sprites/PetAvatar';
@@ -124,15 +125,15 @@ export default function ShopScreen({ onNavigate }: { onNavigate?: (s: string) =>
   const handlePurchase = (itemId: string, cost: number, name: string) => {
     const displayName = t(name);
     if (ownedItems.includes(itemId)) {
-      Alert.alert(t('Already Owned! 🎉'), t('You already have {name}. Equip it in My ZenZoo!').replace('{name}', displayName));
+      showAlert(t('Already Owned! 🎉'), t('You already have {name}. Equip it in My ZenZoo!').replace('{name}', displayName));
       return;
     }
     if (calmCoins < cost) {
-      Alert.alert(t('Need more coins 💎'), t('You need {n} more Calm Coins. Keep breathing and focusing!').replace('{n}', String(cost - calmCoins)));
+      showAlert(t('Need more coins 💎'), t('You need {n} more Calm Coins. Keep breathing and focusing!').replace('{n}', String(cost - calmCoins)));
       return;
     }
     buyItem(itemId, cost);
-    Alert.alert(t('Purchased! 🎉'), t('You got {name}! Go to My ZenZoo to equip it.').replace('{name}', displayName));
+    showAlert(t('Purchased! 🎉'), t('You got {name}! Go to My ZenZoo to equip it.').replace('{name}', displayName));
   };
 
   const categories = ['Backgrounds', 'Hats', 'Outfits'] as const;
@@ -161,6 +162,7 @@ export default function ShopScreen({ onNavigate }: { onNavigate?: (s: string) =>
               { icon: '☁️', label: 'Breathe', detail: '+10 per cycle',    color: PALETTE.sky,    screen: 'Emotions' },
               { icon: '🎯', label: 'Focus',   detail: '+10 per session',  color: PALETTE.purple, screen: 'Focus'    },
               { icon: '🌙', label: 'Bedtime', detail: '+5–10 per task',   color: '#748FFC',      screen: 'Bedroom'  },
+              { icon: '📖', label: 'Stories', detail: '+10–40 per story', color: PALETTE.pink,   screen: 'Stories'  },
             ].map(e => (
               <TouchableOpacity
                 key={e.label}
@@ -180,7 +182,7 @@ export default function ShopScreen({ onNavigate }: { onNavigate?: (s: string) =>
       {/* ── Catalog ── */}
       <ScrollView style={styles.scroll} contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
         {categories.map(cat => {
-          const catItems = shopCatalog.filter(i => i.category === cat);
+          const catItems = shopCatalog.filter(i => i.category === cat && !i.exclusive);
           const catCfg   = CAT_CFG[cat];
           const isOpen   = openCat === cat;
           return (

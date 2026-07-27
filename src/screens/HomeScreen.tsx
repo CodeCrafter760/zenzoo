@@ -72,7 +72,7 @@ export default function HomeScreen({ onNavigate }: { onNavigate?: (screen: strin
   const toggleLanguage = () => setLanguage(language === 'en' ? 'es' : 'en');
 
   // Toddlers get a stripped-down home screen — fewer sections, bigger targets.
-  // Preschool trims just the wordiest bit (the text tip). Big Kid sees it all.
+  // Preschool trims just the wordiest bit (the text tip). Pre-Teen sees it all.
   const isToddler   = ageGroup === 'Toddler (2-4)';
   const isPreschool = ageGroup === 'Preschool (4-6)';
 
@@ -95,7 +95,13 @@ export default function HomeScreen({ onNavigate }: { onNavigate?: (screen: strin
   const isBedtime = bedtimeHour !== null && new Date().getHours() >= bedtimeHour;
   const activeBg = equipped.Backgrounds ? shopCatalog.find(i => i.id === equipped.Backgrounds) : undefined;
 
-  const safeBg = isDark ? T.bg : theme.bg;
+  // theme.bg is only genuinely "light" for the morning/afternoon/evening buckets —
+  // night's is a moody navy, so it must be skipped when the user has picked light
+  // mode themselves (e.g. bright mode at night), or they'd land on a dark screen
+  // despite asking for light.
+  const safeBg = isDark
+    ? (tod === 'night' ? theme.bg : T.bg)
+    : (tod === 'night' ? LIGHT_THEME.bg : theme.bg);
 
   return (
     <SafeAreaView style={[styles.safe, { backgroundColor: safeBg }]}>
@@ -323,7 +329,7 @@ export default function HomeScreen({ onNavigate }: { onNavigate?: (screen: strin
               })}
             </ScrollView>
 
-            {/* ── Daily tip — Big Kid only; the wording is a bit much for Preschool ── */}
+            {/* ── Daily tip — Pre-Teen only; the wording is a bit much for Preschool ── */}
             {!isPreschool && (
               <View style={[styles.tipCard, { backgroundColor: isDark ? T.card : '#FFF9E8', borderColor: isDark ? T.edge : '#FFE5A0' }]}>
                 <Text style={styles.tipLabel}>✨ {t('Daily Thought')}</Text>

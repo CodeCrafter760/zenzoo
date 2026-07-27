@@ -1,12 +1,13 @@
 import React, { useState } from 'react';
 import {
   StyleSheet, Text, View, ScrollView, SafeAreaView,
-  TouchableOpacity, TextInput, Alert, ActivityIndicator,
+  TouchableOpacity, TextInput, ActivityIndicator,
 } from 'react-native';
 import { useZenZoo } from '../context/ZenZooContext';
 import type { ChildProfile, StoryAgeGroup } from '../context/ZenZooContext';
 import { LIGHT_THEME, DARK_THEME, PALETTE, RADIUS, SHADOW } from '../theme/theme';
 import { tapHaptic, successHaptic } from '../utils/haptics';
+import { showConfirm } from '../utils/alert';
 import { SPECIES_LIST, findSpecies } from '../data/species';
 import { STORY_AGE_GROUPS } from '../data/stories/types';
 import PetAvatar, { asEyeStyle, asHairStyle, hatStyleFromId, outfitStyleFromId } from '../components/sprites/PetAvatar';
@@ -15,7 +16,7 @@ import { Feather } from '@expo/vector-icons';
 const AGE_GROUP_HINT: Record<StoryAgeGroup, string> = {
   'Toddler (2-4)':   'Big buttons, a simple home screen',
   'Preschool (4-6)': 'The full ZenZoo experience',
-  'Big Kid (6-9)':   'The full ZenZoo experience',
+  'Pre-Teen (6-9)':   'The full ZenZoo experience',
 };
 
 type ThemeColors = typeof LIGHT_THEME | typeof DARK_THEME;
@@ -176,7 +177,7 @@ export function ChildSwitcherScreen({ onDone, dismissible = true }: { onDone: ()
   }
 
   const confirmDelete = (child: ChildProfile) => {
-    Alert.alert(
+    showConfirm(
       t('Remove {name}?').replace('{name}', child.name),
       t("This child's profile and progress will be deleted."),
       [

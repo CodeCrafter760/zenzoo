@@ -8,7 +8,7 @@ const tummyBoat: StoryItem = {
   color: '#4DB6AC',
   bg: '#E8FBF7',
   anim: 'tummy-boat',
-  audio: null,
+  audio: require('../../../assets/Stories_audio/the_tummy_boat.m4a'),
   genre: 'Breathing',
   ageGroup: 'Toddler (2-4)',
   content: `Lie down and imagine a tiny, friendly boat resting gently on your belly.

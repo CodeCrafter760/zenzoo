@@ -8,9 +8,9 @@ const focusCrystal: StoryItem = {
   color: '#4FC3F7',
   bg: '#EAF0F3',
   anim: 'focus-crystal',
-  audio: null,
+  audio: require('../../../assets/Stories_audio/finding_the_focus_crystal.m4a'),
   genre: 'Focus',
-  ageGroup: 'Big Kid (6-9)',
+  ageGroup: 'Pre-Teen (6-9)',
   content: `You are an explorer, standing at the mouth of a quiet, echoing cave. Somewhere deep inside, a shimmering Focus Crystal is waiting to be found — and only your listening superpower can lead you to it.
 
 Close your eyes. Take a slow breath in... and out.

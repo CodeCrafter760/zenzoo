@@ -1,8 +1,9 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { StyleSheet, Text, View, TouchableOpacity, Animated, Easing, Alert, SafeAreaView, type DimensionValue } from 'react-native';
+import { StyleSheet, Text, View, TouchableOpacity, Animated, Easing, SafeAreaView, type DimensionValue } from 'react-native';
 import { useZenZoo } from '../context/ZenZooContext';
 import { PALETTE, RADIUS, SHADOW, DARK_THEME, LIGHT_THEME } from '../theme/theme';
 import { tapHaptic, successHaptic } from '../utils/haptics';
+import { showAlert } from '../utils/alert';
 import { Feather } from '@expo/vector-icons';
 import FontAwesome5 from '@expo/vector-icons/FontAwesome5';
 import BreathingIcon from '../components/icons/BreathingIcon';
@@ -67,7 +68,7 @@ export default function EmotionsScreen() {
   const { awardCoins, addBreathingSession, isDark, ageGroup, language, t } = useZenZoo();
   // "Box breathing · 4s in · 4s hold · 4s out" is jargon a pre-reader can't
   // use — Toddler & Preschool get a plain-language line instead.
-  const isBigKid = ageGroup === 'Big Kid (6-9)';
+  const isPreTeen = ageGroup === 'Pre-Teen (6-9)';
   const [isBreathing,      setIsBreathing]      = useState(false);
   const [phase,            setPhase]             = useState<PhaseName>('Ready');
   const [secondsLeft,      setSecondsLeft]       = useState(4);
@@ -124,7 +125,7 @@ export default function EmotionsScreen() {
         awardCoins(10);
         addBreathingSession();
         successHaptic();
-        Alert.alert(t('🌟 Great breathing!'), t('You earned 10 Calm Coins! Keep it up!'));
+        showAlert(t('🌟 Great breathing!'), t('You earned 10 Calm Coins! Keep it up!'));
         transitionTo('Inhale');
       }
     }
@@ -193,7 +194,7 @@ export default function EmotionsScreen() {
         <View style={styles.header}>
           <Text style={[styles.title, { color: isDark ? DARK_THEME.text : cfg.text }]}>{t('Breathing Space')}</Text>
           <Text style={[styles.subtitle, { color: cfg.primary }]}>
-            {isBigKid ? t('Box breathing  ·  4s in  ·  4s hold  ·  4s out') : t('Watch the bubble grow and shrink!')}
+            {isPreTeen ? t('Box breathing  ·  4s in  ·  4s hold  ·  4s out') : t('Watch the bubble grow and shrink!')}
           </Text>
         </View>
       )}

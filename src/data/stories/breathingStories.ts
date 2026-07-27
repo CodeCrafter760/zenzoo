@@ -239,7 +239,7 @@ Y mientras cruzaba de vuelta la puertita de madera, el jardín detrás de ella b
     anim: 'tummy-boat',
     audio: null,
     genre: 'Breathing',
-    ageGroup: 'Big Kid (6-9)',
+    ageGroup: 'Pre-Teen (6-9)',
     content: `On a calm blue lake surrounded by tall pine trees, a young girl named Kiko was learning to row a little wooden boat. Her grandfather sat across from her, holding his own oars loosely, watching with a patient smile.
 
 "Faster, faster!" Kiko said to herself, rowing quickly, splashing water everywhere. But the harder she rowed, the more the boat wobbled and spun in circles instead of moving forward smoothly.
@@ -447,7 +447,7 @@ Y ahí, en el estanque tranquilo e iluminado por el sol, rodeada de la respiraci
     anim: 'breathing-garden',
     audio: null,
     genre: 'Breathing',
-    ageGroup: 'Big Kid (6-9)',
+    ageGroup: 'Pre-Teen (6-9)',
     content: `In a garden bursting with red and orange flowers, a tiny hummingbird named Zippy zoomed from blossom to blossom, her wings beating so fast they blurred into an invisible shimmer. Zippy loved being fast — fast flying, fast eating, fast everything.
 
 But today, after zooming around the garden all morning, Zippy noticed she felt strangely tired, and a little dizzy, and her tiny heart was pounding so quickly she could barely catch her breath.
@@ -783,7 +783,7 @@ Mientras el sol comenzaba a ponerse, pintando todo el patio de una cálida luz d
     anim: 'wind-chime',
     audio: null,
     genre: 'Breathing',
-    ageGroup: 'Big Kid (6-9)',
+    ageGroup: 'Pre-Teen (6-9)',
     content: `In a misty mountain forest, there grew a grove of tall, slender bamboo stalks that swayed gently in even the slightest breeze. The local pandas called it the Singing Bamboo Grove, because on windy days, the stalks would knock together softly, creating a gentle, musical clatter.
 
 A young panda named Mochi loved to visit the grove, but she often worried during windy days. "What if the wind is too strong and the bamboo snaps?" she asked her grandmother panda, watching the tall stalks bend dramatically in a gust of wind.

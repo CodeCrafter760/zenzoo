@@ -17,4 +17,7 @@ export const HATS: ShopItem[] = [
   { id: 'hat_antlers',     name: 'Reindeer Antlers',cost: 55,  category: 'Hats' },
   { id: 'hat_graduation',  name: 'Graduation Cap',  cost: 60,  category: 'Hats' },
   { id: 'hat_propeller',   name: 'Propeller Beanie',cost: 40,  category: 'Hats' },
+
+  // Earned only — granted by the 7-day streak reward, never purchasable.
+  { id: 'hat_streakflame', name: 'Streak Flame',    cost: 0,   category: 'Hats', exclusive: true },
 ];
