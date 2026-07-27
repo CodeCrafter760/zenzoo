@@ -17,6 +17,7 @@ const AGE_GROUP_HINT: Record<StoryAgeGroup, string> = {
   'Toddler (2-4)':   'Big buttons, a simple home screen',
   'Preschool (4-6)': 'The full ZenZoo experience',
   'Pre-Teen (6-9)':   'The full ZenZoo experience',
+  'Teen (13-17)':    'Dark mode, longer focus sessions, and a lo-fi lounge',
 };
 
 type ThemeColors = typeof LIGHT_THEME | typeof DARK_THEME;

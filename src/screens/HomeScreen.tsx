@@ -11,6 +11,7 @@ import XPBar from '../components/XPBar';
 import { tapHaptic } from '../utils/haptics';
 import { findSpecies, SPECIES_LIST } from '../data/species';
 import PetAvatar, { asEyeStyle, asHairStyle, hatStyleFromId, outfitStyleFromId } from '../components/sprites/PetAvatar';
+import GlassCard from '../components/GlassCard';
 import { Feather, FontAwesome5 } from '@expo/vector-icons';
 
 function getTimeOfDay() {
@@ -73,8 +74,11 @@ export default function HomeScreen({ onNavigate }: { onNavigate?: (screen: strin
 
   // Toddlers get a stripped-down home screen — fewer sections, bigger targets.
   // Preschool trims just the wordiest bit (the text tip). Pre-Teen sees it all.
+  // Teen sees it all too, plus the frosted "Sanctuary" styling on the hero card.
   const isToddler   = ageGroup === 'Toddler (2-4)';
   const isPreschool = ageGroup === 'Preschool (4-6)';
+  const isTeen      = ageGroup === 'Teen (13-17)';
+  const teenAccent  = isDark ? PALETTE.neonTeal : PALETTE.neonViolet;
 
   const darkBtn    = useSpring();
   const parentBtn  = useSpring();
@@ -228,8 +232,15 @@ export default function HomeScreen({ onNavigate }: { onNavigate?: (screen: strin
         )}
 
         {/* ── Pet hero scene ── */}
-        <View style={styles.petCard}>
+        <View style={[styles.petCard, isTeen && { shadowColor: teenAccent }]}>
           <PetBackground bgColor={activeBg?.type} />
+          {isTeen && (
+            <View style={styles.petCardGlassStrip}>
+              <GlassCard isDark={isDark} tint={teenAccent + '22'} style={styles.petCardGlassCard}>
+                <Text style={styles.petCardGlassLabel}>{t('Sanctuary')}</Text>
+              </GlassCard>
+            </View>
+          )}
           <View style={styles.petCardInner}>
             <PetCircle
               species={genetics.species}
@@ -402,6 +413,9 @@ const styles = StyleSheet.create({
 
   petCard:      { borderRadius: RADIUS.xl, height: 420, marginHorizontal: -18, marginBottom: 16, overflow: 'hidden', shadowColor: PALETTE.purple, ...SHADOW.lg },
   petCardInner: { flex: 1, justifyContent: 'center', alignItems: 'center' },
+  petCardGlassStrip: { position: 'absolute', top: 14, left: 14, zIndex: 2 },
+  petCardGlassCard:  { paddingHorizontal: 14, paddingVertical: 8 },
+  petCardGlassLabel: { fontSize: 12, fontWeight: '900', color: '#FFF', letterSpacing: 0.3 },
 
   sectionTitle: { fontSize: 17, fontWeight: '900', marginBottom: 14 },
 

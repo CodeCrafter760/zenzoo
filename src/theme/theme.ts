@@ -18,6 +18,10 @@ export const PALETTE = {
   violet: '#8B5CF6',  // Bedroom checklist, progress fill
   amber:  '#FBBF24',  // Bedroom breathing circle glow
   green:  '#2ECC71',  // Success / "Done" badges
+  // Teen accent pair — cooler/higher-contrast than the core palette, used only
+  // where ageGroup === 'Teen (13-17)' (tab bar, Focus/Vibe/Drip screens).
+  neonViolet: '#BB86FC',
+  neonTeal:   '#03DAC6',
 } as const;
 
 // ── Light surface theme ────────────────────────────────────────────────────────

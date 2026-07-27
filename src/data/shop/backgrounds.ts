@@ -45,4 +45,10 @@ export const BACKGROUNDS: ShopItem[] = [
 
   // Earned only — granted by the 30-day streak reward, never purchasable.
   { id: 'bg_streak_gold',    name: 'Streak Gold',      cost: 0,   category: 'Backgrounds', type: '#FFD700', exclusive: true },
+
+  // Teen-only — LED/neon room colors for the "Drip" shop, priced like Rare/Epic tiers.
+  { id: 'bg_neon_violet',    name: 'Neon Violet',      cost: 35,  category: 'Backgrounds', type: '#BB86FC', rarity: 'Rare', ageGroup: 'Teen (13-17)' },
+  { id: 'bg_neon_teal',      name: 'Neon Teal',        cost: 35,  category: 'Backgrounds', type: '#03DAC6', rarity: 'Rare', ageGroup: 'Teen (13-17)' },
+  { id: 'bg_hot_magenta',    name: 'Hot Magenta',      cost: 40,  category: 'Backgrounds', type: '#FF2E92', rarity: 'Rare', ageGroup: 'Teen (13-17)' },
+  { id: 'bg_matte_charcoal', name: 'Matte Charcoal',   cost: 70,  category: 'Backgrounds', type: '#1A1A1A', rarity: 'Epic', ageGroup: 'Teen (13-17)' },
 ];

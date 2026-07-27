@@ -16,6 +16,7 @@ import anxietyStories from './anxietyStories';
 import kindnessStories from './kindnessStories';
 import confidenceStories from './confidenceStories';
 import emotionsStories from './emotionsStories';
+import teenStories from './teenStories';
 
 export * from './types';
 
@@ -38,4 +39,5 @@ export const STORIES = [
   ...kindnessStories,
   ...confidenceStories,
   ...emotionsStories,
+  ...teenStories,
 ];

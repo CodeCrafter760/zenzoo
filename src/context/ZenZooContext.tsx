@@ -473,6 +473,14 @@ export function ZenZooProvider({ children }: { children: React.ReactNode }) {
     });
   };
 
+  // Teens default into dark mode the moment their profile becomes active — it's
+  // just the starting point for that switch, toggleDark() still works normally
+  // afterward, and this never fires again for the same switch.
+  useEffect(() => {
+    if (activeChild?.ageGroup === 'Teen (13-17)') setIsDark(true);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [activeChildId]);
+
   // Active-child derived values, exposed flat so existing screens don't need to change
   const ageGroup = activeChild?.ageGroup ?? DEFAULT_AGE_GROUP;
   const genetics = activeChild?.genetics ?? DEFAULT_GENETICS;

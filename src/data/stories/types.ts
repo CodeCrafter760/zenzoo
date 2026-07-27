@@ -5,10 +5,10 @@ export type StoryAnimType =
   | 'jar-of-fireflies' | 'growing-plant' | 'kite-flying' | 'weather-mood';
 
 export type StoryGenre = 'Sleep' | 'Breathing' | 'Focus' | 'Anxiety' | 'Kindness' | 'Confidence' | 'Emotions';
-export type StoryAgeGroup = 'Toddler (2-4)' | 'Preschool (4-6)' | 'Pre-Teen (6-9)';
+export type StoryAgeGroup = 'Toddler (2-4)' | 'Preschool (4-6)' | 'Pre-Teen (6-9)' | 'Teen (13-17)';
 
 export const STORY_GENRES: StoryGenre[] = ['Sleep', 'Breathing', 'Focus', 'Anxiety', 'Kindness', 'Confidence', 'Emotions'];
-export const STORY_AGE_GROUPS: StoryAgeGroup[] = ['Toddler (2-4)', 'Preschool (4-6)', 'Pre-Teen (6-9)'];
+export const STORY_AGE_GROUPS: StoryAgeGroup[] = ['Toddler (2-4)', 'Preschool (4-6)', 'Pre-Teen (6-9)', 'Teen (13-17)'];
 
 // Only the human-readable fields need a translation — color, anim, audio, etc.
 // stay the same regardless of language.

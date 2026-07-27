@@ -6,6 +6,7 @@ import { tapHaptic } from './src/utils/haptics';
 import { Feather } from '@expo/vector-icons';
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import FontAwesome5 from '@expo/vector-icons/FontAwesome5';
+import { Headphones } from 'lucide-react-native';
 import HomeScreen from './src/screens/HomeScreen';
 import MyZenZooScreen from './src/screens/MyZenZooScreen';
 import ShopScreen from './src/screens/ShopScreen';
@@ -14,11 +15,13 @@ import FocusScreen from './src/screens/FocusScreen';
 import BedroomRoutineScreen from './src/screens/BedroomRoutineScreen';
 import GratitudeJournalScreen from './src/screens/GratitudeJournalScreen';
 import StoriesScreen from './src/screens/StoriesScreen';
+import AudioLoungeScreen from './src/screens/AudioLoungeScreen';
 import AdminScreen from './src/screens/AdminScreen';
 import ParentDashboardScreen from './src/screens/ParentDashboardScreen';
 import AuthScreen from './src/screens/AuthScreen';
 import MoodSurveyScreen from './src/screens/MoodSurveyScreen';
 import { ChildSwitcherScreen } from './src/screens/ChildProfileScreen';
+import type { StoryAgeGroup } from './src/context/ZenZooContext';
 
 function LoadingScreen({ isDark }: { isDark: boolean }) {
   const T = isDark ? DARK_THEME : LIGHT_THEME;
@@ -29,39 +32,65 @@ function LoadingScreen({ isDark }: { isDark: boolean }) {
   );
 }
 
-const TABS = [
+type TabScreen = 'Home' | 'MyZenZoo' | 'Shop' | 'Emotions' | 'Stories' | 'Vibe';
+interface TabDef { screen: TabScreen; label: string; activeColor: string; activeBg: string }
+
+const BASE_TABS: TabDef[] = [
   { screen: 'Home',     label: 'Home',    activeColor: PALETTE.gold,   activeBg: '#FFF8E0' },
   { screen: 'MyZenZoo', label: 'My Zoo',  activeColor: PALETTE.purple, activeBg: '#F0EDFF' },
   { screen: 'Shop',     label: 'Shop',    activeColor: PALETTE.mint,   activeBg: '#E0FAF5' },
   { screen: 'Emotions', label: 'Breathe', activeColor: PALETTE.sky,    activeBg: '#E3F4FC' },
   { screen: 'Stories',  label: 'Stories', activeColor: PALETTE.pink,   activeBg: '#FFF0F5' },
-] as const;
+];
+
+// Teens get relabeled copy on the same Home/Shop screens (no new navigator),
+// plus one extra tab — Vibe — for the lo-fi/ambient audio lounge.
+const TEEN_TABS: TabDef[] = [
+  { screen: 'Home',     label: 'Sanctuary', activeColor: PALETTE.gold,       activeBg: '#FFF8E0' },
+  { screen: 'MyZenZoo', label: 'My Zoo',    activeColor: PALETTE.purple,     activeBg: '#F0EDFF' },
+  { screen: 'Shop',     label: 'Drip',      activeColor: PALETTE.mint,       activeBg: '#E0FAF5' },
+  { screen: 'Emotions', label: 'Breathe',   activeColor: PALETTE.sky,        activeBg: '#E3F4FC' },
+  { screen: 'Vibe',     label: 'Vibe',      activeColor: PALETTE.neonViolet, activeBg: '#2A1B4A' },
+  { screen: 'Stories',  label: 'Stories',   activeColor: PALETTE.pink,       activeBg: '#FFF0F5' },
+];
+
+// Max tab count across both sets — used to pre-allocate a fixed pool of
+// Animated.Values so switching age tiers never resizes the animation array.
+const MAX_TABS = Math.max(BASE_TABS.length, TEEN_TABS.length);
+
+function tabsForAgeGroup(ageGroup: StoryAgeGroup): TabDef[] {
+  return ageGroup === 'Teen (13-17)' ? TEEN_TABS : BASE_TABS;
+}
 
 type FeatherName = React.ComponentProps<typeof Feather>['name'];
 
 function TabIcon({ screen, color, size = 20 }: { screen: string; color: string; size?: number }) {
   if (screen === 'MyZenZoo') return <MaterialCommunityIcons name="paw-outline" size={size} color={color} />;
   if (screen === 'Shop')     return <FontAwesome5 name="gem" size={size - 2} color={color} />;
+  if (screen === 'Vibe')     return <Headphones size={size} color={color} />;
   const featherName: FeatherName = screen === 'Home' ? 'home' : screen === 'Emotions' ? 'wind' : 'book-open';
   return <Feather name={featherName} size={size} color={color} />;
 }
 
-type Screen = typeof TABS[number]['screen'] | 'Focus' | 'Bedroom' | 'Journal' | 'Parent' | 'MoodSurvey' | 'ChildSwitcher';
+type Screen = TabScreen | 'Focus' | 'Bedroom' | 'Journal' | 'Parent' | 'MoodSurvey' | 'ChildSwitcher';
 
 function AppInner() {
   const [currentScreen, setScreen] = useState<Screen>('Home');
   const [hasEnteredApp, setHasEnteredApp] = useState(false);
   const {
-    isDark, isAdmin, toggleAdmin, childProfiles, activeChildId, t,
+    isDark, isAdmin, toggleAdmin, childProfiles, activeChildId, t, ageGroup,
     session, authLoading, childrenLoading,
   } = useZenZoo();
   const T = isDark ? DARK_THEME : LIGHT_THEME;
+  const TABS = tabsForAgeGroup(ageGroup);
 
   const toggleRef  = useRef(toggleAdmin);
   toggleRef.current = toggleAdmin;
 
-  // One Animated.Value per tab — pops to 1.25 on selection then springs back to 1
-  const tabScales = useRef(TABS.map(() => new Animated.Value(1))).current;
+  // Fixed-size pool (sized to the larger of the two tab sets) — pops to 1.25 on
+  // selection then springs back to 1. Fixed size means switching to/from a Teen
+  // profile (5 tabs <-> 6 tabs) never resizes this array mid-render.
+  const tabScales = useRef(Array.from({ length: MAX_TABS }, () => new Animated.Value(1))).current;
 
   const navigate = (s: string) => setScreen(s as Screen);
 
@@ -120,6 +149,7 @@ function AppInner() {
         {currentScreen === 'Bedroom'  && <BedroomRoutineScreen onNavigate={navigate} />}
         {currentScreen === 'Journal'  && <GratitudeJournalScreen onNavigate={navigate} />}
         {currentScreen === 'Stories'  && <StoriesScreen />}
+        {currentScreen === 'Vibe'     && <AudioLoungeScreen />}
         {currentScreen === 'Parent'   && <ParentDashboardScreen onNavigate={navigate} />}
         {currentScreen === 'MoodSurvey' && <MoodSurveyScreen onNavigate={navigate} />}
         {currentScreen === 'ChildSwitcher' && <ChildSwitcherScreen onDone={() => navigate('Home')} />}

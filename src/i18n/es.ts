@@ -554,6 +554,27 @@ const ES: Record<string, string> = {
   'Already have an account?': '¿Ya tienes una cuenta?',
   'Sign Up': 'Registrarse',
   'Forgot password?': '¿Olvidaste tu contraseña?',
+
+  // ── Teen edition ──
+  'Teen (13-17)': 'Adolescente (13-17)',
+  'Dark mode, longer focus sessions, and a lo-fi lounge': 'Modo oscuro, sesiones de concentración más largas y una sala lo-fi',
+  'Sanctuary': 'Santuario',
+  'Drip': 'Estilo',
+  'The Drip': 'La Tienda de Estilo',
+  'Vibe': 'Ambiente',
+  'Lo-fi loops for studying, chilling, or resetting': 'Loops lo-fi para estudiar, relajarte o desconectar',
+  'Coming soon': 'Muy pronto',
+  'Study': 'Estudiar',
+  'Chill': 'Relajarse',
+  'Unwind': 'Desconectar',
+  'Rainy Window': 'Ventana Lluviosa',
+  'Late Night Desk': 'Escritorio Nocturno',
+  'Slow Drive': 'Paseo Lento',
+  'Empty Hallway': 'Pasillo Vacío',
+  'Neon Violet': 'Violeta Neón',
+  'Neon Teal': 'Verde Azulado Neón',
+  'Hot Magenta': 'Magenta Intenso',
+  'Matte Charcoal': 'Carbón Mate',
 };
 
 export default ES;

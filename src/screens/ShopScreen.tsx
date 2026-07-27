@@ -99,6 +99,7 @@ export default function ShopScreen({ onNavigate }: { onNavigate?: (s: string) =>
   const T = isDark ? DARK_THEME : LIGHT_THEME;
   // The "how to earn" economics explainer is extra reading a toddler doesn't need.
   const isToddler = ageGroup === 'Toddler (2-4)';
+  const isTeen = ageGroup === 'Teen (13-17)';
   const [openCat, setOpenCat] = useState<'Backgrounds' | 'Hats' | 'Outfits' | null>('Backgrounds');
 
   const toggleCat = (cat: 'Backgrounds' | 'Hats' | 'Outfits') => {
@@ -144,7 +145,7 @@ export default function ShopScreen({ onNavigate }: { onNavigate?: (s: string) =>
       {/* ── Header ── */}
       <View style={[styles.header, { backgroundColor: T.card, borderColor: T.edge }]}>
         <View>
-          <Text style={[styles.headerTitle, { color: T.text }]}>{t('Calm Shop')} 💎</Text>
+          <Text style={[styles.headerTitle, { color: T.text }]}>{isTeen ? t('The Drip') : t('Calm Shop')} 💎</Text>
           <Text style={[styles.headerSub, { color: T.mid }]}>{t('Spend your hard-earned coins!')}</Text>
         </View>
         <View style={[styles.wallet, { backgroundColor: isDark ? '#2D2A5E' : '#F0EDFF' }]}>
@@ -182,7 +183,9 @@ export default function ShopScreen({ onNavigate }: { onNavigate?: (s: string) =>
       {/* ── Catalog ── */}
       <ScrollView style={styles.scroll} contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
         {categories.map(cat => {
-          const catItems = shopCatalog.filter(i => i.category === cat && !i.exclusive);
+          const catItems = shopCatalog.filter(i =>
+            i.category === cat && !i.exclusive && (!i.ageGroup || i.ageGroup === ageGroup)
+          );
           const catCfg   = CAT_CFG[cat];
           const isOpen   = openCat === cat;
           return (

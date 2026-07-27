@@ -539,7 +539,7 @@ const GENRE_EMOJI: Record<StoryGenre, string> = {
   Sleep: '🌙', Breathing: '🌬️', Focus: '🎯', Anxiety: '🎈', Kindness: '💗', Confidence: '⭐', Emotions: '🌲',
 };
 const AGE_EMOJI: Record<StoryAgeGroup, string> = {
-  'Toddler (2-4)': '🍼', 'Preschool (4-6)': '🧒', 'Pre-Teen (6-9)': '🧑',
+  'Toddler (2-4)': '🍼', 'Preschool (4-6)': '🧒', 'Pre-Teen (6-9)': '🧑', 'Teen (13-17)': '🧑‍🎓',
 };
 
 type GenreFilter = StoryGenre | 'All';

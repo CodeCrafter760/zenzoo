@@ -31,20 +31,27 @@ const DURATIONS_BY_TIER = {
   toddler:   { focus: 5  * 60, shortBreak: 2 * 60, longBreak: 5  * 60 },
   preschool: { focus: 10 * 60, shortBreak: 3 * 60, longBreak: 10 * 60 },
   bigkid:    { focus: 25 * 60, shortBreak: 5 * 60, longBreak: 15 * 60 },
+  // Real study-block lengths — teens default to a longer session than the
+  // classic 25-min Pomodoro, matching actual homework/study session lengths.
+  teen:      { focus: 45 * 60, shortBreak: 10 * 60, longBreak: 20 * 60 },
 };
 
 const DURATION_OPTIONS_BY_TIER = {
   toddler:   { focus: [3, 5, 8],           shortBreak: [1, 2, 3],  longBreak: [3, 5, 8]      },
   preschool: { focus: [5, 10, 15],         shortBreak: [2, 3, 5],  longBreak: [5, 10, 15]    },
   bigkid:    { focus: [15, 20, 25, 30, 45, 60], shortBreak: [3, 5, 10], longBreak: [10, 15, 20, 30] },
+  teen:      { focus: [25, 30, 45, 50, 60, 90], shortBreak: [5, 10, 15], longBreak: [15, 20, 30, 45] },
 };
 
 export default function FocusScreen({ onNavigate }: { onNavigate?: (s: string) => void }) {
   const { awardCoins, addFocusMinutes, isDark, ageGroup, language, t } = useZenZoo();
   const T = isDark ? DARK_THEME : LIGHT_THEME;
 
-  const tier: 'toddler' | 'preschool' | 'bigkid' =
-    ageGroup === 'Toddler (2-4)' ? 'toddler' : ageGroup === 'Preschool (4-6)' ? 'preschool' : 'bigkid';
+  const tier: 'toddler' | 'preschool' | 'bigkid' | 'teen' =
+    ageGroup === 'Toddler (2-4)' ? 'toddler'
+    : ageGroup === 'Preschool (4-6)' ? 'preschool'
+    : ageGroup === 'Teen (13-17)' ? 'teen'
+    : 'bigkid';
   const isToddler = tier === 'toddler';
   const DEFAULT_DURATIONS = DURATIONS_BY_TIER[tier];
 
