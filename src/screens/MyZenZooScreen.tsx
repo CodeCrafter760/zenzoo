@@ -22,7 +22,6 @@ const SPROUT_POTS = [
 const PROGRESSION_MILESTONES = [
   { level: 1,  xp: 0,    reward: 'Start',              detail: 'Bear, Fox, Cat & Owl unlocked',  emoji: '🌱' },
   { level: 5,  xp: 200,  reward: 'Koala Unlocked',     detail: 'Your gentle koala friend arrives', emoji: '🐨' },
-  { level: 10, xp: 450,  reward: 'Elephant Unlocked',  detail: 'A wise elephant joins your zoo',  emoji: '🐘' },
   { level: 15, xp: 700,  reward: 'Hippo Unlocked',     detail: 'The mighty hippo is yours',        emoji: '🦛' },
   { level: 20, xp: 950,  reward: 'Red Panda Unlocked', detail: 'The rare red panda appears',       emoji: '🦝' },
   { level: 25, xp: 1200, reward: 'Lion Unlocked',      detail: 'The brave lion roars for you',     emoji: '🦁' },
@@ -46,7 +45,7 @@ export default function MyZenZooScreen({ onNavigate }: { onNavigate?: (screen: s
     journalEntries, moodEntries, activeChildId,
   } = useZenZoo();
   const T = isDark ? DARK_THEME : LIGHT_THEME;
-  const [editorTab, setEditorTab] = useState<'Species' | 'Zoo' | 'Wardrobe' | 'Sprout' | 'Journey'>('Species');
+  const [editorTab, setEditorTab] = useState<'Zoo' | 'Wardrobe' | 'Sprout' | 'Journey'>('Zoo');
   const [potTheme, setPotTheme] = useState(SPROUT_POTS[0]);
   const [openWardrobeCat, setOpenWardrobeCat] = useState<'Backgrounds' | 'Hats' | 'Outfits' | null>('Backgrounds');
   const [openBiome, setOpenBiome] = useState<BiomeKey | null>(BIOMES[0].key);
@@ -78,7 +77,7 @@ export default function MyZenZooScreen({ onNavigate }: { onNavigate?: (screen: s
   // The Journey tab is a text-heavy list of level milestones — too much
   // reading for Toddler, so it's hidden there and shown for everyone else.
   const isToddler = ageGroup === 'Toddler (2-4)';
-  const EDITOR_TABS = (['Species', 'Zoo', 'Wardrobe', 'Sprout', 'Journey'] as const).filter(t => !isToddler || t !== 'Journey');
+  const EDITOR_TABS = (['Zoo', 'Wardrobe', 'Sprout', 'Journey'] as const).filter(t => !isToddler || t !== 'Journey');
 
   const speciesSprings = useSprings(SPECIES_LIST.length);
   const potSprings     = useSprings(SPROUT_POTS.length);
@@ -153,52 +152,10 @@ export default function MyZenZooScreen({ onNavigate }: { onNavigate?: (screen: s
       {/* ── Content ── */}
       <ScrollView style={styles.drawer} contentContainerStyle={styles.drawerContent}>
 
-        {/* SPECIES */}
-        {editorTab === 'Species' && (
-          <>
-            <Text style={[styles.drawerHint, { color: isDark ? T.mid : '#7F8C8D' }]}>{t('Tap an animal to become them. New friends unlock as you level up!')}</Text>
-            <View style={styles.speciesGrid}>
-              {SPECIES_LIST.map((spec, idx) => {
-                const unlocked = level >= spec.unlockLevel;
-                const active = genetics.species === spec.type;
-                return (
-                  <TouchableOpacity
-                    key={spec.type}
-                    style={[styles.speciesCard, { backgroundColor: isDark ? T.card : '#FFFFFF', borderColor: isDark ? T.edge : '#EFEFEF', transform: [{ scale: speciesSprings.vals[idx] }] }, active && styles.speciesCardActive, !unlocked && { backgroundColor: isDark ? T.bg : '#F8F8F8' }]}
-                    onPressIn={() => unlocked && speciesSprings.pressIn(idx)}
-                    onPressOut={() => speciesSprings.pressOut(idx)}
-                    onPress={() => {
-                      if (!unlocked) return;
-                      updateGenetic('bodyColor', spec.color);
-                      updateGenetic('eyes', spec.eyes);
-                      updateGenetic('species', spec.type);
-                    }}
-                    activeOpacity={1}
-                  >
-                    {unlocked ? (
-                      <PetAvatar species={spec.type} bodyColor={spec.color} accentColor={spec.accent} muzzleColor={spec.muzzle} eyes={asEyeStyle(spec.eyes)} size={42} />
-                    ) : (
-                      <Feather name="lock" size={28} color="#B2BEC3" />
-                    )}
-                    <Text style={[styles.speciesName, { color: isDark ? T.text : '#2D3436' }, !unlocked && styles.lockedText]}>{t(spec.type)}</Text>
-                    {!unlocked && (
-                      <Text style={styles.unlockHint}>{language === 'es' ? `Niv. ${spec.unlockLevel}` : `Lv. ${spec.unlockLevel}`}</Text>
-                    )}
-                    {active && <View style={styles.activeCheckBadge}><Text style={{ color: '#FFF', fontSize: 10, fontWeight: '800' }}>{t('ON')}</Text></View>}
-                    {unlocked && (
-                      <View style={[styles.colorSwatch, { backgroundColor: spec.color, borderColor: spec.accent }]} />
-                    )}
-                  </TouchableOpacity>
-                );
-              })}
-            </View>
-          </>
-        )}
-
-        {/* ZOO — browse biomes and see how many animals you've collected from each */}
+        {/* ZOO — browse biomes, see your collection, and tap an unlocked animal to become them */}
         {editorTab === 'Zoo' && (
           <>
-            <Text style={[styles.drawerHint, { color: isDark ? T.mid : '#7F8C8D' }]}>{t('Explore the zoo biomes and see which animals you\'ve collected!')}</Text>
+            <Text style={[styles.drawerHint, { color: isDark ? T.mid : '#7F8C8D' }]}>{t('Tap an animal to become them. Explore each biome and see which friends you\'ve collected!')}</Text>
             {BIOMES.map(biome => {
               const biomeSpecies = SPECIES_LIST.filter(s => s.biome === biome.key);
               const unlockedCount = biomeSpecies.filter(s => level >= s.unlockLevel).length;
@@ -219,11 +176,22 @@ export default function MyZenZooScreen({ onNavigate }: { onNavigate?: (screen: s
                   {isOpen && (
                     <View style={styles.speciesGrid}>
                       {biomeSpecies.map(spec => {
+                        const idx = SPECIES_LIST.indexOf(spec);
                         const unlocked = level >= spec.unlockLevel;
+                        const active = genetics.species === spec.type;
                         return (
-                          <View
+                          <TouchableOpacity
                             key={spec.type}
-                            style={[styles.speciesCard, { backgroundColor: isDark ? T.card : '#FFFFFF', borderColor: isDark ? T.edge : '#EFEFEF' }, !unlocked && { backgroundColor: isDark ? T.bg : '#F8F8F8' }]}
+                            style={[styles.speciesCard, { backgroundColor: isDark ? T.card : '#FFFFFF', borderColor: isDark ? T.edge : '#EFEFEF', transform: [{ scale: speciesSprings.vals[idx] }] }, active && styles.speciesCardActive, !unlocked && { backgroundColor: isDark ? T.bg : '#F8F8F8' }]}
+                            onPressIn={() => unlocked && speciesSprings.pressIn(idx)}
+                            onPressOut={() => speciesSprings.pressOut(idx)}
+                            onPress={() => {
+                              if (!unlocked) return;
+                              updateGenetic('bodyColor', spec.color);
+                              updateGenetic('eyes', spec.eyes);
+                              updateGenetic('species', spec.type);
+                            }}
+                            activeOpacity={1}
                           >
                             {unlocked ? (
                               <PetAvatar species={spec.type} bodyColor={spec.color} accentColor={spec.accent} muzzleColor={spec.muzzle} eyes={asEyeStyle(spec.eyes)} size={42} />
@@ -234,7 +202,11 @@ export default function MyZenZooScreen({ onNavigate }: { onNavigate?: (screen: s
                             {!unlocked && (
                               <Text style={styles.unlockHint}>{language === 'es' ? `Niv. ${spec.unlockLevel}` : `Lv. ${spec.unlockLevel}`}</Text>
                             )}
-                          </View>
+                            {active && <View style={styles.activeCheckBadge}><Text style={{ color: '#FFF', fontSize: 10, fontWeight: '800' }}>{t('ON')}</Text></View>}
+                            {unlocked && (
+                              <View style={[styles.colorSwatch, { backgroundColor: spec.color, borderColor: spec.accent }]} />
+                            )}
+                          </TouchableOpacity>
                         );
                       })}
                     </View>

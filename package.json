@@ -12,6 +12,7 @@
     "expo": "~56.0.17",
     "expo-audio": "~56.0.13",
     "expo-blur": "~56.0.4",
+    "expo-dev-client": "~56.0.25",
     "expo-haptics": "~56.0.3",
     "expo-linking": "~56.0.16",
     "expo-status-bar": "~56.0.4",

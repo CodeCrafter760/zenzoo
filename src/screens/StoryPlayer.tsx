@@ -256,7 +256,7 @@ function AnimForestFriends({ color }: { color: string }) {
       <View style={{ position: 'absolute', top: -78, right: -60, width: 40, height: 40, borderRadius: 20, backgroundColor: '#FFF8E0' }} />
       <View style={{ flexDirection: 'row', gap: 26, alignItems: 'flex-end' }}>
         {[0.8, 1, 0.85].map((scale, i) => (
-          <Animated.View key={i} style={{ alignItems: 'center', transform: [{ rotate }, { scale }] }}>
+          <Animated.View key={i} style={{ alignItems: 'center', transform: [{ rotate }, { scale }], transformOrigin: ['50%', '100%'] }}>
             <View style={{
               width: 0, height: 0, borderLeftWidth: 26, borderRightWidth: 26, borderBottomWidth: 54,
               borderLeftColor: 'transparent', borderRightColor: 'transparent', borderBottomColor: color,
@@ -613,7 +613,7 @@ function AnimWindChime({ color }: { color: string }) {
       <View style={{ width: 120, height: 8, borderRadius: 4, backgroundColor: color, opacity: 0.7 }} />
       <View style={{ flexDirection: 'row', gap: 14, marginTop: 2 }}>
         {tubes.map((t, i) => (
-          <Animated.View key={i} style={{ alignItems: 'center', transform: [{ rotate: t.rotate }] }}>
+          <Animated.View key={i} style={{ alignItems: 'center', transform: [{ rotate: t.rotate }], transformOrigin: ['50%', '0%'] }}>
             <View style={{ width: 2, height: 14, backgroundColor: color, opacity: 0.5 }} />
             <Animated.View style={{ width: 8, height: t.height, borderRadius: 4, backgroundColor: color, opacity: glow }} />
           </Animated.View>
@@ -653,7 +653,7 @@ function AnimLighthouseBeam({ color }: { color: string }) {
     <View style={S.canvas}>
       <View style={{ alignItems: 'center' }}>
         <View style={{ position: 'absolute', top: -6, width: 0, height: 0, borderLeftWidth: 90, borderRightWidth: 90, borderBottomWidth: 4, borderLeftColor: 'transparent', borderRightColor: 'transparent' }} />
-        <Animated.View style={{ position: 'absolute', top: 6, transform: [{ rotate }] }}>
+        <Animated.View style={{ position: 'absolute', top: 6, transform: [{ rotate }], transformOrigin: ['50%', '0%'] }}>
           <View style={{ width: 0, height: 0, borderLeftWidth: 60, borderRightWidth: 60, borderBottomWidth: 90, borderLeftColor: 'transparent', borderRightColor: 'transparent', borderBottomColor: color, opacity: 0.22 }} />
         </Animated.View>
         <View style={{ width: 20, height: 46, backgroundColor: color, borderTopLeftRadius: 4, borderTopRightRadius: 4 }} />
@@ -824,16 +824,22 @@ function AnimGrowingPlant({ color }: { color: string }) {
 
   useEffect(() => {
     const loop = Animated.loop(Animated.sequence([
-      Animated.timing(grow, { toValue: 1, duration: 3200, easing: Easing.out(Easing.quad), useNativeDriver: false }),
+      Animated.timing(grow, { toValue: 1, duration: 3200, easing: Easing.out(Easing.quad), useNativeDriver: true }),
       Animated.delay(1400),
-      Animated.timing(grow, { toValue: 0, duration: 0, useNativeDriver: false }),
+      Animated.timing(grow, { toValue: 0, duration: 0, useNativeDriver: true }),
       Animated.delay(400),
     ]));
     loop.start();
     return () => loop.stop();
   }, []);
 
-  const stemHeight = grow.interpolate({ inputRange: [0, 1], outputRange: [4, 92] });
+  // The stem's layout box stays a fixed 92px tall (so this never touches the JS-thread
+  // layout animator) — it just visually stretches from the ground via scaleY, and the
+  // bloom above it is nudged down by the un-grown remainder so it still tracks the tip.
+  const FULL_STEM = 92;
+  const MIN_STEM = 4;
+  const stemScaleY   = grow.interpolate({ inputRange: [0, 1], outputRange: [MIN_STEM / FULL_STEM, 1] });
+  const bloomShiftY  = grow.interpolate({ inputRange: [0, 1], outputRange: [FULL_STEM - MIN_STEM, 0] });
   const bloomScale = grow.interpolate({ inputRange: [0, 0.7, 1], outputRange: [0, 0.2, 1] });
   const leafOp     = grow.interpolate({ inputRange: [0, 0.4, 1], outputRange: [0, 0.2, 1] });
 
@@ -842,7 +848,7 @@ function AnimGrowingPlant({ color }: { color: string }) {
       <View style={{ position: 'absolute', top: -70, right: -50, width: 46, height: 46, borderRadius: 23, backgroundColor: '#FFD966', opacity: 0.85 }} />
       <View style={{ position: 'absolute', bottom: 18, width: 110, height: 10, borderRadius: 5, backgroundColor: '#8B5E3C', opacity: 0.5 }} />
       <View style={{ alignItems: 'center', justifyContent: 'flex-end', height: 110 }}>
-        <Animated.View style={{ transform: [{ scale: bloomScale }], marginBottom: -6 }}>
+        <Animated.View style={{ transform: [{ translateY: bloomShiftY }, { scale: bloomScale }], marginBottom: -6 }}>
           <View style={{ flexDirection: 'row' }}>
             {[0, 1, 2, 3, 4].map(p => (
               <View key={p} style={{
@@ -853,7 +859,10 @@ function AnimGrowingPlant({ color }: { color: string }) {
             <View style={{ width: 14, height: 14, borderRadius: 7, backgroundColor: '#FFD966' }} />
           </View>
         </Animated.View>
-        <Animated.View style={{ width: 8, height: stemHeight, backgroundColor: '#4C8C4A', borderRadius: 4 }} />
+        <Animated.View style={{
+          width: 8, height: FULL_STEM, backgroundColor: '#4C8C4A', borderRadius: 4,
+          transform: [{ scaleY: stemScaleY }], transformOrigin: ['50%', '100%'],
+        }} />
         <Animated.View style={{ position: 'absolute', bottom: 26, left: '50%', marginLeft: 4, opacity: leafOp, transform: [{ rotate: '30deg' }] }}>
           <View style={{ width: 22, height: 12, borderRadius: 10, backgroundColor: '#4C8C4A' }} />
         </Animated.View>
@@ -950,8 +959,11 @@ function AnimWeatherMood({ color }: { color: string }) {
 }
 
 // ── Dispatcher ────────────────────────────────────────────────────────────────
-
-function StoryAnimation({ anim, color }: { anim: StoryAnimType; color: string }) {
+// Memoized: StoryPlayer re-renders every ~500ms while audio plays (useAudioPlayerStatus's
+// polling interval), but `anim`/`color` never change during that time. Without this, every
+// tick tears down and rebuilds every Animated.interpolate() in the active animation — the
+// main source of the "choppy" jank, since it happens continuously during playback.
+const StoryAnimation = React.memo(function StoryAnimation({ anim, color }: { anim: StoryAnimType; color: string }) {
   switch (anim) {
     case 'sleepy-cloud':     return <AnimSleepyCloud     color={color} />;
     case 'breathing-garden': return <AnimBreathingGarden color={color} />;
@@ -973,7 +985,7 @@ function StoryAnimation({ anim, color }: { anim: StoryAnimType; color: string })
     case 'kite-flying':      return <AnimKiteFlying      color={color} />;
     case 'weather-mood':     return <AnimWeatherMood     color={color} />;
   }
-}
+});
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 

@@ -9,7 +9,6 @@ const SPECIES_IMAGES: Record<string, ImageSourcePropType> = {
   Cat:        require('../../../assets/Species/cat.png'),
   Owl:        require('../../../assets/Species/owl.png'),
   Koala:      require('../../../assets/Species/koala.png'),
-  Elephant:   require('../../../assets/Species/elephant.png'),
   Hippo:      require('../../../assets/Species/hippo.png'),
   'Red Panda':require('../../../assets/Species/red_panda.png'),
   Lion:       require('../../../assets/Species/lion.png'),
@@ -19,7 +18,7 @@ const SPECIES_IMAGES: Record<string, ImageSourcePropType> = {
 // match, so every species reads as the same size regardless of its image's own proportions.
 const SPECIES_ASPECT: Record<string, number> = {
   Bear: 1, Fox: 564 / 543, Cat: 1, Owl: 818 / 980, Koala: 704 / 436,
-  Elephant: 1385 / 980, Hippo: 1, 'Red Panda': 1, Lion: 450 / 360,
+  Hippo: 1, 'Red Panda': 1, Lion: 450 / 360,
 };
 
 export type EyeStyle = 'Wonder' | 'Calm' | 'Sparkle' | 'Sleepy';
@@ -532,11 +531,7 @@ export default function PetAvatar({
   return (
     <Svg width={size} height={size * (130 / 120)} viewBox="0 0 120 130">
       <SvgImage href={source} x={headX} y={HEAD_Y} width={headW} height={HEAD_H} preserveAspectRatio="xMidYMid meet" />
-      {outfit ? (
-        <Outfit style={outfit} bodyColor={bodyColor} r={bodyHalfW} />
-      ) : (
-        <Path d={`M${CX - bodyHalfW},124 Q${CX - bodyHalfW},90 ${CX},90 Q${CX + bodyHalfW},90 ${CX + bodyHalfW},124 Z`} fill={bodyColor} />
-      )}
+      {outfit && <Outfit style={outfit} bodyColor={bodyColor} r={bodyHalfW} />}
       {hat && <Hat style={hat} />}
     </Svg>
   );

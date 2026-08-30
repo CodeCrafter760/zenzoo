@@ -8,7 +8,6 @@ const ES: Record<string, string> = {
   'Cat': 'Gato',
   'Owl': 'Búho',
   'Koala': 'Koala',
-  'Elephant': 'Elefante',
   'Hippo': 'Hipopótamo',
   'Red Panda': 'Panda Rojo',
   'Lion': 'León',
@@ -97,12 +96,12 @@ const ES: Record<string, string> = {
   'You earned {n} Calm Coins!': '¡Ganaste {n} Monedas Calma!',
 
   // ── MyZenZooScreen ──
-  'Species': 'Especies',
   'Zoo': 'Zoológico',
   'Wardrobe': 'Ropero',
   'Sprout': 'Retoño',
   'Journey': 'Camino',
-  'Explore the zoo biomes and see which animals you\'ve collected!': '¡Explora los biomas del zoológico y descubre qué animales has coleccionado!',
+  'Tap an animal to become them. Explore each biome and see which friends you\'ve collected!':
+    'Toca un animal para convertirte en él. ¡Explora cada bioma y descubre qué amigos has coleccionado!',
   'Forest': 'Bosque',
   'Savanna': 'Sabana',
   'Wetlands': 'Humedales',
@@ -156,8 +155,6 @@ const ES: Record<string, string> = {
   'Meditation Sapling': 'Retoño de Meditación',
   'Breathe to Grow': 'Respira para Crecer',
   'ON': 'SÍ',
-  'Tap an animal to become them. New friends unlock as you level up!':
-    'Toca un animal para convertirte en él. ¡Nuevos amigos se desbloquean al subir de nivel!',
   'Equip items you own from the Calm Shop.': 'Equipa los artículos que tienes de la Tienda Calma.',
   'Backgrounds': 'Fondos',
   'Hats': 'Sombreros',
@@ -189,8 +186,6 @@ const ES: Record<string, string> = {
   'Bear, Fox, Cat & Owl unlocked': 'Oso, Zorro, Gato y Búho desbloqueados',
   'Koala Unlocked': 'Koala Desbloqueado',
   'Your gentle koala friend arrives': 'Tu amigo koala llega',
-  'Elephant Unlocked': 'Elefante Desbloqueado',
-  'A wise elephant joins your zoo': 'Un elefante sabio se une a tu zoológico',
   'Hippo Unlocked': 'Hipopótamo Desbloqueado',
   'The mighty hippo is yours': 'El poderoso hipopótamo es tuyo',
   'Red Panda Unlocked': 'Panda Rojo Desbloqueado',

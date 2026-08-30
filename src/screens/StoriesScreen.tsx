@@ -10,6 +10,7 @@ import MassagePlayer, { MassageRoutine } from './MassagePlayer';
 import AffirmationPlayer, { AffirmationItem } from './AffirmationPlayer';
 import StoryPlayer from './StoryPlayer';
 import { STORIES, StoryItem, StoryGenre, StoryAgeGroup, STORY_GENRES, STORY_AGE_GROUPS } from '../data/stories';
+import AffIcon from '../components/icons/AffIcon';
 
 type Section = 'Affirmations' | 'Massages' | 'Stories';
 
@@ -674,10 +675,13 @@ export default function StoriesScreen() {
                   onPressOut={() => affSprings.pressOut(i)}
                   activeOpacity={1}
                 >
-                  <Text style={styles.affEmoji}>{a.emoji}</Text>
+                  <View style={styles.affIconWrap}>
+                    <AffIcon type={a.anim} color={a.color} size={44} />
+                  </View>
                   <Text style={[styles.affText, { color: isDark ? T.text : a.color }]}>{language === 'es' ? (a.es ?? a.text) : a.text}</Text>
                   <View style={[styles.affPlayBtn, { backgroundColor: a.color }]}>
-                    <Text style={styles.affPlayText}>{t('Tap')} ✨</Text>
+                    <Feather name="play" size={11} color="#FFF" />
+                    <Text style={styles.affPlayText}>{t('Tap')}</Text>
                   </View>
                 </TouchableOpacity>
               ))}
@@ -840,9 +844,9 @@ const styles = StyleSheet.create({
     width: '47.5%', borderRadius: 20, padding: 18,
     alignItems: 'center', borderWidth: 1.5, gap: 10,
   },
-  affEmoji:    { fontSize: 36 },
+  affIconWrap: { height: 44, justifyContent: 'center' },
   affText:     { fontSize: 13, fontWeight: '700', textAlign: 'center', lineHeight: 20 },
-  affPlayBtn:  { borderRadius: 12, paddingHorizontal: 12, paddingVertical: 5, marginTop: 4 },
+  affPlayBtn:  { flexDirection: 'row', alignItems: 'center', gap: 5, borderRadius: 12, paddingHorizontal: 12, paddingVertical: 5, marginTop: 4 },
   affPlayText: { fontSize: 11, fontWeight: '800', color: '#FFF' },
 
   // Story cards — square, 3 per row

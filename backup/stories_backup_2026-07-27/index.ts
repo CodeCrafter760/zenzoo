@@ -1,6 +1,8 @@
 import sleepyCloud from './sleepyCloud';
 import breathingGarden from './breathingGarden';
 import braveLittleStar from './braveLittleStar';
+import calmRiver from './calmRiver';
+import forestFriends from './forestFriends';
 import wiggleWorm from './wiggleWorm';
 import focusCrystal from './focusCrystal';
 import balloonRide from './balloonRide';
@@ -22,6 +24,8 @@ export const STORIES = [
   sleepyCloud,
   breathingGarden,
   braveLittleStar,
+  calmRiver,
+  forestFriends,
   wiggleWorm,
   focusCrystal,
   balloonRide,
